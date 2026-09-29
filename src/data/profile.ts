@@ -187,7 +187,7 @@ export const education: Education[] = [
     period: "Sep 2025 – Expected Jan 2027",
     note: "GPA 3.81/4.0. Focus on deep learning, applied ML and LLM systems. MEng research project on multi-agent AI for legal applications.",
     highlights: [
-      "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
+      "Aga Khan Foundation International Scholarship (Geneva, Jul 2025): selected as one of the few students from India to receive it for graduate study at the University of Toronto. It fully covers the program.",
     ],
     showCoursework: true,
   },

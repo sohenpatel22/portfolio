@@ -225,7 +225,7 @@ export const coursework = [
   { name: "Foundations of Data Analytics and ML" },
   { name: "AI in Finance: Neural Networks to Deep Learning" },
   { name: "Management Consulting for Engineers" },
-  { name: "MEng Research Project: Multi-Agent Legal AI", inProgress: true },
+  { name: "MEng Research Project", inProgress: true },
 ];
 
 export const recognition = [

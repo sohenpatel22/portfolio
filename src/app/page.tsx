@@ -155,7 +155,7 @@ export default function Home() {
                     <dt className="eyebrow pt-1">Coursework</dt>
                     <dd className="flex flex-wrap gap-1.5">
                       {coursework.map((c) => (
-                        <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
+                        <span key={c.name} className={`chip max-w-full !whitespace-normal !rounded-xl leading-snug ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
                           {c.name}
                           {c.inProgress ? " · in progress" : ""}
                         </span>

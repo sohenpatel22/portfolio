@@ -198,6 +198,7 @@ export const coursework = [
 
 export const achievements = [
   "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
+  "Delegate at the Harvard Project for Asian and International Relations (HPAIR) conference, Hong Kong, 2023",
   "2 provisional patents filed for ISRO research on deployable space telescope systems (IN:202421088072, IN:202421087180)",
   "All-India Rank 3465 in GATE XE 2023",
 ];

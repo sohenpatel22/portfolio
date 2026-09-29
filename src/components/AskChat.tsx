@@ -22,8 +22,8 @@ const QAS: QA[] = [
     link: { label: "Open the case study", href: "/projects/legal-agents" },
   },
   {
-    q: "What did you do at Deloitte?",
-    a: "I led an engineering team building a six-agent system that turns a client brief into a WBS, RACI, RAID log and status report, with human review, versioned revisions and 129 automated tests.",
+    q: "What was your Deloitte project?",
+    a: "In a Deloitte-sponsored practicum, I led a student team building a six-agent system that turns a client brief into a WBS, RACI, RAID log and status report, with human review, versioned revisions and 129 automated tests.",
     link: { label: "Open the project", href: "/projects/consulting-workplan-agent" },
   },
   {

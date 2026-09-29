@@ -108,7 +108,7 @@ export const projects: Project[] = [
     slug: "consulting-workplan-agent",
     tier: "major",
     title: "Consulting Workplan Agent",
-    kicker: "Deloitte engagement · multi-agent",
+    kicker: "Deloitte sponsored practicum · multi-agent",
     summary:
       "A client brief goes in; a WBS, RACI matrix, RAID log and weekly status report come out, with a human-in-the-loop revision cycle, cross-artifact validation and Word/Excel exports in the firm's template.",
     overview:

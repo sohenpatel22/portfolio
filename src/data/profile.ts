@@ -11,13 +11,13 @@ export const profile = {
   resume: "/Sohen_Patel_Resume.pdf",
   photo: "/headshot.jpg",
   summary:
-    "I am an MEng student at the University of Toronto (GPA 3.81/4.0, graduating Jan 2027) who builds LLM and agentic systems and then measures whether they actually work. I shipped an enterprise agent to 5,000+ employees at Ontario Health, led a six-agent consulting system at Deloitte, and I am building a multi-agent legal reasoning system for my research project. Before AI, I spent a year turning plant data into decisions at ArcelorMittal Nippon Steel. I care about honest baselines, gold-standard datasets and systems people can trust.",
+    "I am an MEng student at the University of Toronto (GPA 3.81/4.0, graduating Jan 2027) who builds LLM and agentic systems and then measures whether they actually work. I shipped an enterprise agent to 5,000+ employees at Ontario Health, led a student team building a six-agent consulting system for a Deloitte-sponsored practicum, and I am building a multi-agent legal reasoning system for my research project. Before AI, I spent a year turning plant data into decisions at ArcelorMittal Nippon Steel. I care about honest baselines, gold-standard datasets and systems people can trust.",
 };
 
 export const stats = [
   { value: 5000, suffix: "+", label: "employees using the Ontario Health News Agent I built" },
   { value: 124, suffix: "%", label: "F1 gain from Chain-of-Thought prompting (0.25 → 0.57)" },
-  { value: 129, suffix: "", label: "automated tests behind the 6-agent Deloitte system" },
+  { value: 129, suffix: "", label: "automated tests behind the 6-agent Deloitte practicum system" },
   { value: 46, suffix: "%", label: "NDCG@10 lift from a two-stage recommender" },
 ];
 
@@ -86,7 +86,7 @@ export const experience = [
   },
   {
     role: "AI Engineering Project Team Lead",
-    org: "Deloitte",
+    org: "Deloitte (Sponsored Practicum)",
     place: "Toronto, ON",
     period: "May 2026 – Jun 2026",
     bullets: [

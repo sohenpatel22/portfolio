@@ -185,6 +185,17 @@ export const education = [
   },
 ];
 
+export const coursework = [
+  { name: "Introduction to Machine Learning" },
+  { name: "Introduction to Deep Learning" },
+  { name: "Data Science Methods and Statistical Learning" },
+  { name: "Foundations of Data Analytics and ML" },
+  { name: "AI in Finance: Neural Networks to Deep Learning" },
+  { name: "Management Consulting for Engineers" },
+  { name: "Introduction to Reinforcement Learning", inProgress: true },
+  { name: "Creative Applications of NLP", inProgress: true },
+];
+
 export const achievements = [
   "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
   "2 provisional patents filed for ISRO research on deployable space telescope systems (IN:202421088072, IN:202421087180)",

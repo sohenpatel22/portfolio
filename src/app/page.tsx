@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { profile, stats, experience, skills, education, achievements } from "@/data/profile";
+import { profile, stats, experience, skills, education, achievements, coursework } from "@/data/profile";
 import { majorProjects, minorProjects } from "@/data/projects";
 import { Counter } from "@/components/Counter";
 import { ProjectExplorer, MoreLabel } from "@/components/ProjectExplorer";
@@ -149,6 +149,17 @@ export default function Home() {
                 <p className="mt-1 text-sm text-muted">{e.note}</p>
               </div>
             ))}
+            <div>
+              <h4 className="eyebrow mb-2">Relevant coursework</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {coursework.map((c) => (
+                  <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
+                    {c.name}
+                    {c.inProgress ? " · in progress" : ""}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
           <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed marker:text-accent">
             {achievements.map((a) => <li key={a}>{a}</li>)}

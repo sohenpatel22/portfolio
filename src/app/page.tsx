@@ -4,7 +4,7 @@ import Link from "next/link";
 import { profile, stats, experience, skills, education, achievements } from "@/data/profile";
 import { majorProjects, minorProjects } from "@/data/projects";
 import { Counter } from "@/components/Counter";
-import { ProjectExplorer, OpenIcon } from "@/components/ProjectExplorer";
+import { ProjectExplorer, MoreLabel } from "@/components/ProjectExplorer";
 import { Reveal } from "@/components/Reveal";
 
 function Section({ id, eyebrow, title, children }: { id: string; eyebrow: string; title: string; children: React.ReactNode }) {
@@ -117,10 +117,10 @@ export default function Home() {
         <ul className="grid gap-3 sm:grid-cols-2">
           {minorProjects.map((m) => (
             <li key={m.slug}>
-              <Link href={`/projects/${m.slug}`} className="card group relative block p-4 pr-11">
+              <Link href={`/projects/${m.slug}`} className="card group block p-4">
                 <span className="text-sm font-medium">{m.title}</span>
                 <span className="mt-0.5 block text-sm text-muted">{m.summary}</span>
-                <OpenIcon />
+                <MoreLabel />
               </Link>
             </li>
           ))}

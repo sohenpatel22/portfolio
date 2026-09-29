@@ -4,13 +4,14 @@ import { useMemo, useState } from "react";
 import type { Project } from "@/data/projects";
 import { Reveal } from "./Reveal";
 
-export function OpenIcon() {
+export function MoreLabel() {
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className="absolute right-4 top-4 h-5 w-5 text-muted transition-colors group-hover:text-accent" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
-      <path d="M15 3h6v6" />
-      <path d="M10 14 21 3" />
-    </svg>
+    <span className="mt-4 inline-flex items-center gap-1.5 self-start font-mono text-sm font-medium text-accent">
+      More
+      <span aria-hidden className="transition-transform group-hover:translate-x-1">
+        →
+      </span>
+    </span>
   );
 }
 
@@ -36,7 +37,7 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
       <div className="grid gap-4 md:grid-cols-2">
         {shown.map((p, i) => (
           <Reveal key={p.slug} delay={(i % 2) * 90} className="flex">
-          <Link href={`/projects/${p.slug}`} className="card group relative flex w-full flex-col p-5 pr-11">
+          <Link href={`/projects/${p.slug}`} className="card group flex w-full flex-col p-5">
             <span className="eyebrow">{p.kicker}</span>
             <h3 className="mt-2 font-serif text-xl font-semibold leading-snug">{p.title}</h3>
             <p className="mt-3 font-mono text-2xl font-medium text-accent">{p.metric.value}</p>
@@ -47,7 +48,7 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
                 <span key={s} className="chip">{s}</span>
               ))}
             </div>
-            <OpenIcon />
+            <MoreLabel />
           </Link>
           </Reveal>
         ))}

@@ -23,6 +23,16 @@ export const stats = [
 
 export const experience = [
   {
+    role: "Teaching Assistant",
+    org: "University of Toronto",
+    place: "Toronto, ON",
+    period: "Sep 2026 – Present",
+    bullets: [
+      "MIE354 Business Process Engineering: supporting course delivery, lab sessions, student assignments, exam grading and assessments.",
+      "MIE1628 Cloud-Based Data Analytics: supporting student assignments, exam grading and lab work.",
+    ],
+  },
+  {
     role: "AI Research Intern",
     org: "Ontario Health",
     place: "Toronto, ON",
@@ -177,7 +187,6 @@ export const education = [
 
 export const achievements = [
   "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
-  "Teaching Assistant: MIE354 Business Process Engineering and MIE1628 Cloud-Based Data Analytics",
   "2 provisional patents filed for ISRO research on deployable space telescope systems (IN:202421088072, IN:202421087180)",
   "All-India Rank 3465 in GATE XE 2023",
 ];

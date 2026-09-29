@@ -73,7 +73,7 @@ export default function Home() {
       </section>
       </div>
 
-      <Section id="experience" eyebrow="Experience" title="Where I have shipped">
+      <Section id="experience" eyebrow="Experience" title="Where I have worked">
         <div className="tl-list space-y-8">
           {experience.map((e) => (
             <article key={e.org} className="tl-item grid gap-2 md:grid-cols-[14rem_1fr] md:gap-8">

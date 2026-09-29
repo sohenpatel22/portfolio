@@ -1,0 +1,137 @@
+/* ===== Motion + polish ===== */
+[data-motion="on"] .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+[data-motion="on"] .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+[data-motion="on"] a.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.hero-glow, .scroll-progress { display: none; }
+[data-motion="on"] .hero-glow {
+  display: block;
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 34rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 22rem at 20% 10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    radial-gradient(34rem 20rem at 85% 30%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
+  animation: glow-drift 14s ease-in-out infinite alternate;
+}
+[data-motion="on"] .hero-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@keyframes glow-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(2%, 3%, 0) scale(1.06); }
+}
+[data-motion="on"] .scroll-progress {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  z-index: 60;
+  transform-origin: 0 50%;
+  background: var(--accent);
+}
+.nav-link { position: relative; transition: color 0.2s; }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -6px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+[data-motion="on"] .nav-link[data-active="true"] { color: var(--ink); }
+[data-motion="on"] .nav-link[data-active="true"]::after { transform: scaleX(1); }
+
+/* ===== Diagrams ===== */
+.flow-line {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2px;
+  align-self: center;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 12px);
+  background-size: 12px 2px;
+}
+.flow-line::after {
+  content: "";
+  position: absolute;
+  right: -1px; top: -3px;
+  border: 4px solid transparent;
+  border-left: 7px solid var(--accent);
+  border-right: 0;
+}
+[data-motion="on"] .flow-line { animation: flow 0.9s linear infinite; }
+@keyframes flow { to { background-position: 12px 0; } }
+.flow-node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  text-align: center;
+  min-width: 0;
+}
+.flow-node.accent { border-color: var(--accent); background: var(--accent-soft); }
+.flow-row { display: flex; flex-wrap: nowrap; align-items: stretch; justify-content: center; }
+.flow-step { display: flex; flex: 1 1 0; min-width: 0; }
+.flow-step:first-child .flow-line { display: none; }
+.flow-stage { display: flex; flex: 1 1 0; min-width: 0; flex-direction: column; justify-content: center; gap: 0.5rem; }
+.flow-line { width: 1.5rem; }
+@media (min-width: 768px) {
+  .flow-fig { width: min(58rem, 92vw); position: relative; left: 50%; transform: translateX(-50%); }
+}
+@media (max-width: 767px) {
+  .flow-row { flex-direction: column; }
+  .flow-step { flex-direction: column; align-items: stretch; }
+  .flow-line {
+    width: 2px; height: 1.5rem; align-self: center;
+    background: repeating-linear-gradient(180deg, var(--accent) 0 6px, transparent 6px 12px);
+    background-size: 2px 12px;
+  }
+  .flow-line::after {
+    right: auto; left: -3px; top: auto; bottom: -1px;
+    border: 4px solid transparent; border-top: 7px solid var(--accent); border-bottom: 0;
+  }
+  [data-motion="on"] .flow-line { animation-name: flow-v; }
+  @keyframes flow-v { to { background-position: 0 12px; } }
+}
+
+/* ===== Timeline + project nav ===== */
+[data-timeline="on"] .tl-list {
+  border-left: 2px solid var(--line);
+  margin-left: 0.4rem;
+  padding-left: 1.5rem;
+}
+[data-timeline="on"] .tl-item { position: relative; }
+[data-timeline="on"] .tl-item::before {
+  content: "";
+  position: absolute;
+  left: calc(-1.5rem - 0.4rem - 1px);
+  top: 0.35rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+

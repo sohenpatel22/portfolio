@@ -185,7 +185,7 @@ export const education: Education[] = [
     school: "University of Toronto",
     degree: "Master of Engineering, Data Analytics and Machine Learning",
     period: "Sep 2025 – Expected Jan 2027",
-    note: "GPA 3.81/4.0 · Focus on deep learning, applied ML and LLM systems.",
+    note: "GPA 3.81/4.0",
     highlights: [
       {
         label: "Scholarship",

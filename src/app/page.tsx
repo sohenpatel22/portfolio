@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { profile, stats, experience, skills, education, coursework } from "@/data/profile";
+import { profile, stats, experience, skills, education, coursework, recognition, volunteering } from "@/data/profile";
 import { majorProjects, minorProjects } from "@/data/projects";
 import { Counter } from "@/components/Counter";
 import { ProjectExplorer, MoreLabel } from "@/components/ProjectExplorer";
@@ -180,6 +180,38 @@ export default function Home() {
               )}
             </article>
           ))}
+        </div>
+      </Section>
+
+      <Section id="extracurricular" eyebrow="Beyond the day job" title="Extracurricular and recognition">
+        <div className="grid gap-8 md:grid-cols-[1fr_1.4fr]">
+          <div>
+            <h3 className="eyebrow mb-3">Recognition</h3>
+            <ul className="space-y-3">
+              {recognition.map((r) => (
+                <li key={r.title} className="card p-4">
+                  <p className="text-sm font-medium leading-snug">{r.title}</p>
+                  <p className="mt-1 font-mono text-xs text-muted">{r.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="eyebrow mb-3">Volunteering</h3>
+            <div className="space-y-5">
+              {volunteering.map((v) => (
+                <article key={v.role + v.period} className="grid gap-1 sm:grid-cols-[9.5rem_1fr] sm:gap-4">
+                  <p className="font-mono text-xs text-muted">{v.period}</p>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {v.role} <span className="font-normal text-muted">· {v.org}</span>
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed">{v.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </Section>
 

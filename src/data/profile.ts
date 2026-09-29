@@ -225,3 +225,40 @@ export const coursework = [
   { name: "MEng Research Project: Multi-Agent Legal AI", inProgress: true },
 ];
 
+export const recognition = [
+  {
+    title: "Delegate, Harvard Project for Asian and International Relations (HPAIR) conference",
+    detail: "Hong Kong, 2023",
+  },
+  {
+    title: "Reach for the Stars (RFS) Mentorship Program",
+    detail: "Cycle 6",
+  },
+];
+
+export const volunteering = [
+  {
+    role: "Speaker",
+    org: "Aga Khan Foundation",
+    period: "Jun 2024 – Jul 2024",
+    text: "Gave a national webinar, 'Dream of Becoming an Engineer?', for the CareerCraft program of the Aga Khan Education Board for India, guiding students across India on choosing engineering career paths. Received a Letter of Appreciation.",
+  },
+  {
+    role: "MIS Incharge",
+    org: "Aga Khan Foundation",
+    period: "Mar 2019 – Mar 2024",
+    text: "Maintained and regulated attendance records in the portal for religious classes run under the Ismaili Tariqah and Religious Education Board for India (ITREB).",
+  },
+  {
+    role: "Volunteer",
+    org: "Aga Khan Foundation",
+    period: "Mar 2020 – Mar 2022",
+    text: "Managed and oversaw virtual religious classes during the COVID-19 pandemic under ITREB.",
+  },
+  {
+    role: "Member",
+    org: "Aga Khan Foundation",
+    period: "Mar 2019 – Mar 2021",
+    text: "Part of a volunteer team supporting young people, with a focus on sports, under the Aga Khan Youth and Sports Board for India (AKYSB).",
+  },
+];

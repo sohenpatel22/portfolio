@@ -192,6 +192,7 @@ export default function Home() {
                 <li key={r.title} className="card p-4">
                   <p className="text-sm font-medium leading-snug">{r.title}</p>
                   <p className="mt-1 font-mono text-xs text-muted">{r.detail}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{r.text}</p>
                 </li>
               ))}
             </ul>

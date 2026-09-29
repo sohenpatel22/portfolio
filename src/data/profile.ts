@@ -227,12 +227,14 @@ export const coursework = [
 
 export const recognition = [
   {
-    title: "Delegate, Harvard Project for Asian and International Relations (HPAIR) conference",
-    detail: "Hong Kong, 2023",
+    title: "Delegate, Harvard Project for Asian and International Relations (HPAIR) Asia Conference",
+    detail: "Hong Kong, August 2023 · attended on a scholarship",
+    text: "HPAIR is a student-run Harvard College organisation, founded in 1991, that hosts an annual conference for students and young professionals on the economic, political and social issues facing the Asia-Pacific. The 2023 conference in Hong Kong brought together keynotes, fireside chats and team impact challenges. It deepened my understanding of global issues and collaboration, and I am grateful for the scholarship that made it possible.",
   },
   {
-    title: "Reach for the Stars (RFS) Mentorship Program",
-    detail: "Cycle 6",
+    title: "Reach for the Stars (RFS) Mentorship Program, Cycle 6",
+    detail: "National-level programme",
+    text: "Selected among the top 60 students for a mentorship programme organised at the national level.",
   },
 ];
 

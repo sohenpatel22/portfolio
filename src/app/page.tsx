@@ -143,41 +143,43 @@ export default function Home() {
               <h3 className="mt-1 font-serif text-lg font-semibold leading-snug">{e.school}</h3>
               <p className="mt-1 text-sm">{e.degree}</p>
               <p className="mt-0.5 text-sm text-muted">{e.note}</p>
-              <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+              <dl className="mt-4 space-y-3 border-t border-line pt-4 text-sm">
                 {e.highlights.map((h) => (
                   <div key={h.label} className="grid grid-cols-[5.5rem_1fr] gap-3">
                     <dt className="eyebrow pt-0.5">{h.label}</dt>
                     <dd className="leading-relaxed">{h.text}</dd>
                   </div>
                 ))}
-              </dl>
-              <div className="mt-4 space-y-2">
                 {e.showCoursework && (
-                  <Disclosure title={`Relevant coursework (${coursework.length})`}>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                    <dt className="eyebrow pt-1">Coursework</dt>
+                    <dd className="flex flex-wrap gap-1.5">
                       {coursework.map((c) => (
                         <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
                           {c.name}
                           {c.inProgress ? " · in progress" : ""}
                         </span>
                       ))}
-                    </div>
-                  </Disclosure>
+                    </dd>
+                  </div>
                 )}
                 {e.patents && (
-                  <Disclosure title={`Patents (${e.patents.items.length})`}>
-                    <p className="text-sm text-muted">{e.patents.intro}</p>
-                    <ul className="mt-3 space-y-3 text-sm leading-relaxed">
-                      {e.patents.items.map((pt) => (
-                        <li key={pt.number} className="border-l-2 border-accent pl-3">
-                          {pt.title}
-                          <span className="mt-0.5 block font-mono text-xs text-muted">{pt.number} · Filed {pt.filed}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Disclosure>
+                  <div className="grid grid-cols-[5.5rem_1fr] gap-3">
+                    <dt className="eyebrow pt-0.5">Patents</dt>
+                    <dd>
+                      <p className="text-muted">{e.patents.intro}</p>
+                      <ul className="mt-2 space-y-3 leading-relaxed">
+                        {e.patents.items.map((pt) => (
+                          <li key={pt.number} className="border-l-2 border-accent pl-3">
+                            {pt.title}
+                            <span className="mt-0.5 block font-mono text-xs text-muted">{pt.number} · Filed {pt.filed}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
                 )}
-              </div>
+              </dl>
             </article>
           ))}
         </div>

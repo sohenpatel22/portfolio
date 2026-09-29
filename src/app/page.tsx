@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { profile, stats, experience, skills, education, achievements, coursework } from "@/data/profile";
+import { profile, stats, experience, skills, education, coursework } from "@/data/profile";
 import { majorProjects, minorProjects } from "@/data/projects";
 import { Counter } from "@/components/Counter";
 import { ProjectExplorer, MoreLabel } from "@/components/ProjectExplorer";
@@ -138,32 +138,48 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section id="education" eyebrow="Background" title="Education and recognition">
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="space-y-5">
-            {education.map((e) => (
-              <div key={e.school}>
-                <p className="font-mono text-xs text-muted">{e.period}</p>
-                <h3 className="font-serif text-lg font-semibold">{e.school}</h3>
-                <p className="text-sm">{e.degree}</p>
-                <p className="mt-1 text-sm text-muted">{e.note}</p>
-              </div>
-            ))}
-            <div>
-              <h4 className="eyebrow mb-2">Relevant coursework</h4>
-              <div className="flex flex-wrap gap-1.5">
-                {coursework.map((c) => (
-                  <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
-                    {c.name}
-                    {c.inProgress ? " · in progress" : ""}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed marker:text-accent">
-            {achievements.map((a) => <li key={a}>{a}</li>)}
-          </ul>
+      <Section id="education" eyebrow="Background" title="Education">
+        <div className="grid gap-6 md:grid-cols-2">
+          {education.map((e) => (
+            <article key={e.school} className="card p-5">
+              <p className="font-mono text-xs text-muted">{e.period}</p>
+              <h3 className="mt-1 font-serif text-lg font-semibold">{e.school}</h3>
+              <p className="text-sm">{e.degree}</p>
+              <p className="mt-1 text-sm text-muted">{e.note}</p>
+              {e.highlights.length > 0 && (
+                <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed marker:text-accent">
+                  {e.highlights.map((h) => <li key={h}>{h}</li>)}
+                </ul>
+              )}
+              {e.showCoursework && (
+                <div className="mt-4">
+                  <h4 className="eyebrow mb-2">Relevant coursework</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {coursework.map((c) => (
+                      <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
+                        {c.name}
+                        {c.inProgress ? " · in progress" : ""}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {e.patents && (
+                <div className="mt-4">
+                  <h4 className="eyebrow mb-2">Patents</h4>
+                  <p className="text-sm text-muted">{e.patents.intro}</p>
+                  <ul className="mt-2 space-y-3 text-sm leading-relaxed">
+                    {e.patents.items.map((pt) => (
+                      <li key={pt.number} className="border-l-2 border-accent pl-3">
+                        {pt.title}
+                        <span className="mt-0.5 block font-mono text-xs text-muted">{pt.number} · Filed {pt.filed}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </article>
+          ))}
         </div>
       </Section>
 

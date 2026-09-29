@@ -170,18 +170,48 @@ export const skills = [
   { group: "MLOps & Deployment", items: ["Git / GitHub", "Docker", "FastAPI", "MLflow", "DVC", "pytest", "CI/CD", "AWS (S3, EC2, SageMaker, Bedrock)"] },
 ];
 
-export const education = [
+export type Education = {
+  school: string;
+  degree: string;
+  period: string;
+  note: string;
+  highlights: string[];
+  patents?: { intro: string; items: { title: string; number: string; filed: string }[] };
+  showCoursework?: boolean;
+};
+
+export const education: Education[] = [
   {
     school: "University of Toronto",
     degree: "Master of Engineering, Data Analytics and Machine Learning",
     period: "Sep 2025 – Expected Jan 2027",
     note: "GPA 3.81/4.0. Focus on deep learning, applied ML and LLM systems. MEng research project on multi-agent AI for legal applications.",
+    highlights: [
+      "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
+    ],
+    showCoursework: true,
   },
   {
     school: "L.D. College of Engineering, Gujarat Technological University",
     degree: "B.E. Mechanical Engineering",
     period: "Jul 2021 – Jul 2024",
     note: "CGPA 8.40/10.",
+    highlights: ["All-India Rank 3465 in GATE XE 2023, a national-level engineering examination"],
+    patents: {
+      intro: "Two provisional patents filed from my ISRO research internship:",
+      items: [
+        {
+          title: "Coarse Actuation Mechanism for Primary Optics Deployment in CubeSat-Based Space Telescopes for Sub-Meter Resolution Imaging Applications",
+          number: "IN:202421088072",
+          filed: "Nov 14, 2024",
+        },
+        {
+          title: "Fine Actuation Device for Precision Alignment of Primary Optics in Deployable Space Telescopes",
+          number: "IN:202421087180",
+          filed: "Nov 12, 2024",
+        },
+      ],
+    },
   },
 ];
 
@@ -195,9 +225,3 @@ export const coursework = [
   { name: "MEng Research Project: Multi-Agent Legal AI", inProgress: true },
 ];
 
-export const achievements = [
-  "Aga Khan Foundation International Scholarship, fully covering graduate study at the University of Toronto",
-  "Delegate at the Harvard Project for Asian and International Relations (HPAIR) conference, Hong Kong, 2023",
-  "2 provisional patents filed for ISRO research on deployable space telescope systems (IN:202421088072, IN:202421087180)",
-  "All-India Rank 3465 in GATE XE 2023",
-];

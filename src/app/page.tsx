@@ -138,43 +138,46 @@ export default function Home() {
       <Section id="education" eyebrow="Background" title="Education">
         <div className="grid gap-6 md:grid-cols-2">
           {education.map((e) => (
-            <article key={e.school} className="card p-5">
+            <article key={e.school} className="card flex flex-col p-5">
               <p className="font-mono text-xs text-muted">{e.period}</p>
-              <h3 className="mt-1 font-serif text-lg font-semibold">{e.school}</h3>
-              <p className="text-sm">{e.degree}</p>
-              <p className="mt-1 text-sm text-muted">{e.note}</p>
-              {e.highlights.length > 0 && (
-                <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed marker:text-accent">
-                  {e.highlights.map((h) => <li key={h}>{h}</li>)}
-                </ul>
-              )}
-              {e.showCoursework && (
-                <div className="mt-4">
-                  <h4 className="eyebrow mb-2">Relevant coursework</h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {coursework.map((c) => (
-                      <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
-                        {c.name}
-                        {c.inProgress ? " · in progress" : ""}
-                      </span>
-                    ))}
+              <h3 className="mt-1 font-serif text-lg font-semibold leading-snug">{e.school}</h3>
+              <p className="mt-1 text-sm">{e.degree}</p>
+              <p className="mt-0.5 text-sm text-muted">{e.note}</p>
+              <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+                {e.highlights.map((h) => (
+                  <div key={h.label} className="grid grid-cols-[5.5rem_1fr] gap-3">
+                    <dt className="eyebrow pt-0.5">{h.label}</dt>
+                    <dd className="leading-relaxed">{h.text}</dd>
                   </div>
-                </div>
-              )}
-              {e.patents && (
-                <div className="mt-4">
-                  <h4 className="eyebrow mb-2">Patents</h4>
-                  <p className="text-sm text-muted">{e.patents.intro}</p>
-                  <ul className="mt-2 space-y-3 text-sm leading-relaxed">
-                    {e.patents.items.map((pt) => (
-                      <li key={pt.number} className="border-l-2 border-accent pl-3">
-                        {pt.title}
-                        <span className="mt-0.5 block font-mono text-xs text-muted">{pt.number} · Filed {pt.filed}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                ))}
+              </dl>
+              <div className="mt-4 space-y-2">
+                {e.showCoursework && (
+                  <Disclosure title={`Relevant coursework (${coursework.length})`}>
+                    <div className="flex flex-wrap gap-1.5">
+                      {coursework.map((c) => (
+                        <span key={c.name} className={`chip ${c.inProgress ? "!border-accent !text-accent" : ""}`}>
+                          {c.name}
+                          {c.inProgress ? " · in progress" : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </Disclosure>
+                )}
+                {e.patents && (
+                  <Disclosure title={`Patents (${e.patents.items.length})`}>
+                    <p className="text-sm text-muted">{e.patents.intro}</p>
+                    <ul className="mt-3 space-y-3 text-sm leading-relaxed">
+                      {e.patents.items.map((pt) => (
+                        <li key={pt.number} className="border-l-2 border-accent pl-3">
+                          {pt.title}
+                          <span className="mt-0.5 block font-mono text-xs text-muted">{pt.number} · Filed {pt.filed}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Disclosure>
+                )}
+              </div>
             </article>
           ))}
         </div>

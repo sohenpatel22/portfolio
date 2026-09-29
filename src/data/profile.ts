@@ -175,7 +175,7 @@ export type Education = {
   degree: string;
   period: string;
   note: string;
-  highlights: string[];
+  highlights: { label: string; text: string }[];
   patents?: { intro: string; items: { title: string; number: string; filed: string }[] };
   showCoursework?: boolean;
 };
@@ -185,9 +185,12 @@ export const education: Education[] = [
     school: "University of Toronto",
     degree: "Master of Engineering, Data Analytics and Machine Learning",
     period: "Sep 2025 – Expected Jan 2027",
-    note: "GPA 3.81/4.0. Focus on deep learning, applied ML and LLM systems. MEng research project on multi-agent AI for legal applications.",
+    note: "GPA 3.81/4.0 · Focus on deep learning, applied ML and LLM systems.",
     highlights: [
-      "Aga Khan Foundation International Scholarship (Geneva, Jul 2025): selected as one of the few students from India to receive it for graduate study at the University of Toronto. It fully covers the program.",
+      {
+        label: "Scholarship",
+        text: "Aga Khan Foundation International Scholarship (Jul 2025), awarded to one of the few students from India and covering the full program.",
+      },
     ],
     showCoursework: true,
   },
@@ -195,10 +198,10 @@ export const education: Education[] = [
     school: "L.D. College of Engineering, Gujarat Technological University",
     degree: "B.E. Mechanical Engineering",
     period: "Jul 2021 – Jul 2024",
-    note: "CGPA 8.40/10.",
-    highlights: ["All-India Rank 3465 in GATE XE 2023, a national-level engineering examination"],
+    note: "CGPA 8.40/10",
+    highlights: [{ label: "Exam", text: "All-India Rank 3465 in GATE XE 2023, a national-level engineering examination." }],
     patents: {
-      intro: "Two provisional patents filed from my ISRO research internship:",
+      intro: "Filed from my ISRO research internship.",
       items: [
         {
           title: "Coarse Actuation Mechanism for Primary Optics Deployment in CubeSat-Based Space Telescopes for Sub-Meter Resolution Imaging Applications",

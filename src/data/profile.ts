@@ -192,8 +192,7 @@ export const coursework = [
   { name: "Foundations of Data Analytics and ML" },
   { name: "AI in Finance: Neural Networks to Deep Learning" },
   { name: "Management Consulting for Engineers" },
-  { name: "Introduction to Reinforcement Learning", inProgress: true },
-  { name: "Creative Applications of NLP", inProgress: true },
+  { name: "MEng Research Project: Multi-Agent Legal AI", inProgress: true },
 ];
 
 export const achievements = [

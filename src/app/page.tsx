@@ -6,6 +6,7 @@ import { majorProjects, minorProjects } from "@/data/projects";
 import { Counter } from "@/components/Counter";
 import { ProjectExplorer, MoreLabel } from "@/components/ProjectExplorer";
 import { Reveal } from "@/components/Reveal";
+import { Disclosure } from "@/components/Disclosure";
 
 function Section({ id, eyebrow, title, children }: { id: string; eyebrow: string; title: string; children: React.ReactNode }) {
   return (
@@ -88,12 +89,8 @@ export default function Home() {
                   {e.bullets.map((b) => <li key={b}>{b}</li>)}
                 </ul>
                 {e.more && (
-                  <details className="group mt-4 rounded-lg border border-line bg-surface">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-2.5 text-sm font-medium hover:text-accent">
-                      <span>More detail on how I did it</span>
-                      <span aria-hidden className="font-mono text-accent transition-transform group-open:rotate-45">+</span>
-                    </summary>
-                    <div className="space-y-5 border-t border-line px-4 py-4">
+                  <Disclosure title="More detail on how I did it" className="mt-4">
+                    <div className="space-y-5">
                       {e.more.map((g) => (
                         <div key={g.title}>
                           <h4 className="eyebrow mb-2">{g.title}</h4>
@@ -103,7 +100,7 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                  </details>
+                  </Disclosure>
                 )}
               </div>
             </article>

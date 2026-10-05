@@ -45,6 +45,17 @@ export default async function ProjectPage({ params }: Props) {
 
       <p className="mt-6 leading-relaxed text-muted">{p.overview}</p>
       <Diagram slug={p.slug} />
+      {p.images && (
+        <div className="mt-8 space-y-6">
+          {p.images.map((im) => (
+            <figure key={im.src}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={im.src} alt={im.alt} width={im.width} height={im.height} loading="lazy" className="w-full rounded-lg border border-line bg-white" />
+              <figcaption className="mt-2 text-xs text-muted">{im.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
       {p.sections.map((sec) => (
         <section key={sec.title}>
           <h2 className="mt-12 font-serif text-2xl font-semibold">{sec.title}</h2>

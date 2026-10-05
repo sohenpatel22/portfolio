@@ -15,6 +15,7 @@ export type Project = {
   sections: Section[];
   repo?: string;
   demo?: string;
+  images?: { src: string; alt: string; caption: string; width: number; height: number }[];
 };
 
 export const projects: Project[] = [

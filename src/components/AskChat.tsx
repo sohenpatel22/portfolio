@@ -27,6 +27,11 @@ const QAS: QA[] = [
     link: { label: "Open the project", href: "/projects/consulting-workplan-agent" },
   },
   {
+    q: "Tell me about the Market Research Agent",
+    a: "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and SQL lookups, with a judge that verifies each answer. It reached 0.95 faithfulness on a 99-question golden set at about $0.001 per question, and I ablated the retrieval and compared four models by cost per correct answer.",
+    link: { label: "Open the case study", href: "/projects/market-research-agent" },
+  },
+  {
     q: "How do you evaluate LLM systems?",
     a: "Against a hand-built gold set, with recall split by confidence tier, every unmatched answer adjudicated (real, hallucinated, out of scope), bootstrap confidence intervals and a baseline to beat. I also debug the evaluator itself: I found and fixed several scoring bugs that were distorting results.",
   },

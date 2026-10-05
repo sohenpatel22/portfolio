@@ -62,7 +62,34 @@ const QAS: QA[] = [
   },
 ];
 
-type Msg = { from: "you" | "bot"; text: string; link?: QA["link"] };
+type Msg = { from: "you" | "bot"; text: string; link?: QA["link"]; ai?: boolean };
+
+const MAX_Q = 280;
+
+const ERRORS: Record<number, string> = {
+  429: "You have reached the question limit for now. The preset questions still work, or email me.",
+  503: "AI answers are paused right now. The preset questions still work, or email me.",
+  400: "Please keep your question under 280 characters.",
+  403: "That request was blocked. Please use the chat on the site itself.",
+};
+
+/** Turns page paths like /projects/legal-agents or /#experience in a bot answer into links. */
+function Linkified({ text, onNavigate }: { text: string; onNavigate: () => void }) {
+  const parts = text.split(/((?<![\w/.:-])\/projects\/[a-z0-9-]+|(?<![\w/.:-])\/#[a-z]+)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^\/(projects\/|#)/.test(part) ? (
+          <Link key={i} href={part} onClick={onNavigate} className="font-medium text-accent underline underline-offset-2">
+            {part}
+          </Link>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 export function AskChat() {
   const [open, setOpen] = useState(false);
@@ -71,7 +98,10 @@ export function AskChat() {
   ]);
   const [asked, setAsked] = useState<Set<string>>(new Set());
   const [typing, setTyping] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [input, setInput] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
+  const checked = useRef(false);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: "end" });
@@ -82,6 +112,16 @@ export function AskChat() {
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
   }, []);
+
+  // Ask the server once whether the AI text box should be offered. This call is free: no LLM, no database.
+  useEffect(() => {
+    if (!open || checked.current) return;
+    checked.current = true;
+    fetch("/api/chat", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { enabled: false }))
+      .then((d: { enabled?: boolean }) => setAiEnabled(Boolean(d.enabled)))
+      .catch(() => setAiEnabled(false));
+  }, [open]);
 
   function ask(item: QA) {
     if (typing) return;
@@ -94,6 +134,50 @@ export function AskChat() {
     }, 550);
   }
 
+  async function askAi(e: React.FormEvent) {
+    e.preventDefault();
+    const q = input.trim();
+    if (!q || typing || q.length > MAX_Q) return;
+    setInput("");
+    const history = [...msgs, { from: "you" as const, text: q }]
+      .filter((m) => m.from === "you" || m.ai)
+      .slice(-4)
+      .map((m) => ({ role: m.from === "you" ? "user" : "assistant", content: m.text }));
+    setMsgs((m) => [...m, { from: "you", text: q }]);
+    setTyping(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history }),
+      });
+      if (!res.ok || !res.body) {
+        const msg = ERRORS[res.status] ?? "Something went wrong. Please try again, or use the preset questions.";
+        if (res.status === 503) setAiEnabled(false);
+        setMsgs((m) => [...m, { from: "bot", text: msg }]);
+        return;
+      }
+      setMsgs((m) => [...m, { from: "bot", text: "", ai: true }]);
+      setTyping(false);
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let acc = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += dec.decode(value, { stream: true });
+        setMsgs((m) => [...m.slice(0, -1), { from: "bot", text: acc, ai: true }]);
+      }
+      if (!acc.trim()) {
+        setMsgs((m) => [...m.slice(0, -1), { from: "bot", text: "I could not produce an answer. Please try rephrasing, or use the preset questions." }]);
+      }
+    } catch {
+      setMsgs((m) => [...m, { from: "bot", text: "Something went wrong. Please try again, or use the preset questions." }]);
+    } finally {
+      setTyping(false);
+    }
+  }
+
   const remaining = QAS.filter((x) => !asked.has(x.q));
 
   return (
@@ -102,12 +186,12 @@ export function AskChat() {
         <div
           role="dialog"
           aria-label="Ask about Sohen"
-          className="card flex h-[min(34rem,calc(100vh-6rem))] w-[min(23rem,calc(100vw-2rem))] flex-col overflow-hidden shadow-2xl"
+          className="card flex h-[min(36rem,calc(100vh-6rem))] w-[min(23rem,calc(100vw-2rem))] flex-col overflow-hidden shadow-2xl"
         >
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div>
               <p className="text-sm font-medium">Ask about Sohen</p>
-              <p className="text-xs text-muted">Pick a question</p>
+              <p className="text-xs text-muted">{aiEnabled ? "Pick a question or type your own" : "Pick a question"}</p>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Close" className="text-muted hover:text-ink">
               ✕
@@ -116,8 +200,8 @@ export function AskChat() {
           <div className="flex-1 space-y-2 overflow-auto p-3 text-sm" aria-live="polite">
             {msgs.map((m, i) => (
               <div key={i} className={m.from === "you" ? "flex justify-end" : "flex"}>
-                <div className={`max-w-[88%] rounded-lg px-3 py-2 leading-relaxed ${m.from === "you" ? "bg-accent text-bg" : "bg-accent-soft"}`}>
-                  {m.text}
+                <div className={`max-w-[88%] whitespace-pre-wrap rounded-lg px-3 py-2 leading-relaxed ${m.from === "you" ? "bg-accent text-bg" : "bg-accent-soft"}`}>
+                  {m.from === "bot" ? <Linkified text={m.text} onNavigate={() => setOpen(false)} /> : m.text}
                   {m.link &&
                     (m.link.external ? (
                       <a href={m.link.href} target={m.link.href.startsWith("mailto:") ? undefined : "_blank"} rel="noopener" className="mt-2 block font-medium text-accent underline underline-offset-2">
@@ -142,10 +226,10 @@ export function AskChat() {
             )}
             <div ref={bottom} />
           </div>
-          <div className="max-h-40 space-y-1.5 overflow-auto border-t border-line p-3">
+          <div className="max-h-32 space-y-1.5 overflow-auto border-t border-line p-3">
             {remaining.length === 0 ? (
               <p className="text-xs text-muted">
-                That covers it. For anything else, email{" "}
+                That covers the presets. For anything else, email{" "}
                 <a className="text-accent underline" href={`mailto:${profile.email}`}>
                   {profile.email}
                 </a>
@@ -164,6 +248,30 @@ export function AskChat() {
               ))
             )}
           </div>
+          {aiEnabled && (
+            <form onSubmit={askAi} className="border-t border-line p-3">
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value.slice(0, MAX_Q))}
+                  maxLength={MAX_Q}
+                  placeholder="Ask your own question…"
+                  aria-label="Ask your own question"
+                  className="min-w-0 flex-1 rounded-md border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-accent"
+                />
+                <button
+                  type="submit"
+                  disabled={typing || !input.trim()}
+                  className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-bg disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] leading-snug text-muted">
+                Typed questions are answered by an AI model from this site&apos;s content and can be wrong. Please do not share personal information.
+              </p>
+            </form>
+          )}
         </div>
       ) : (
         <button

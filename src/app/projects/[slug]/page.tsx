@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { projects, visibleProjects } from "@/data/projects";
+import { projects, visibleProjects, type Table } from "@/data/projects";
 import { legalResults, legalFacts, replay } from "@/data/legal";
 import { ResultsChart } from "@/components/ResultsChart";
 import { TrialReplay } from "@/components/TrialReplay";
@@ -9,6 +9,38 @@ import { Diagram } from "@/components/Diagram";
 import { ProjectNav } from "@/components/ProjectNav";
 
 type Props = { params: Promise<{ slug: string }> };
+
+function DataTable({ table }: { table: Table }) {
+  return (
+    <figure className="mt-5">
+      {table.caption && <figcaption className="eyebrow mb-2">{table.caption}</figcaption>}
+      <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+        <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
+          <thead>
+            <tr className="bg-accent-soft">
+              {table.columns.map((c) => (
+                <th key={c} scope="col" className="px-3 py-2 font-mono text-xs font-medium uppercase tracking-wide text-accent">
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((r, i) => (
+              <tr key={i} className="border-t border-line align-top">
+                {r.map((cell, j) => (
+                  <td key={j} className={`px-3 py-2 leading-relaxed ${j === 0 ? "font-medium" : "text-muted"}`}>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </figure>
+  );
+}
 
 export function generateStaticParams() {
   return visibleProjects.map((p) => ({ slug: p.slug }));
@@ -44,6 +76,27 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       <p className="mt-6 leading-relaxed text-muted">{p.overview}</p>
+      {p.facts && (
+        <dl className="mt-8 grid grid-cols-2 gap-4 border-y border-line py-5 sm:grid-cols-3">
+          {p.facts.map((f) => (
+            <div key={f.k}>
+              <dt className="font-mono text-xl font-medium text-accent">{f.k}</dt>
+              <dd className="mt-0.5 text-xs leading-snug text-muted">{f.v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {p.docs && (
+        <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <span className="eyebrow">Docs in the repo</span>
+          {p.docs.map((d) => (
+            <a key={d.href} href={d.href} target="_blank" rel="noopener" className="text-accent underline underline-offset-2">
+              {d.label}
+            </a>
+          ))}
+        </p>
+      )}
+      <Diagram slug={`${p.slug}:system`} />
       <Diagram slug={p.slug} />
       {p.images && (
         <div className="mt-8 space-y-6">
@@ -59,9 +112,13 @@ export default async function ProjectPage({ params }: Props) {
       {p.sections.map((sec) => (
         <section key={sec.title}>
           <h2 className="mt-12 font-serif text-2xl font-semibold">{sec.title}</h2>
-          <ul className="mt-4 list-disc space-y-3 pl-5 leading-relaxed marker:text-accent">
-            {sec.items.map((b) => <li key={b}>{b}</li>)}
-          </ul>
+          {sec.intro && <p className="mt-3 leading-relaxed text-muted">{sec.intro}</p>}
+          {sec.table && <DataTable table={sec.table} />}
+          {sec.items.length > 0 && (
+            <ul className="mt-5 list-disc space-y-3 pl-5 leading-relaxed marker:text-accent">
+              {sec.items.map((b) => <li key={b}>{b}</li>)}
+            </ul>
+          )}
         </section>
       ))}
 

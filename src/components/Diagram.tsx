@@ -12,6 +12,21 @@ const DIAGRAMS: Record<string, { title: string; stages: { label: string; sub?: s
       [{ label: "Verdict + confidence", sub: "scored vs baseline", accent: true }],
     ],
   },
+  "market-research-agent:system": {
+    title: "System overview",
+    stages: [
+      [{ label: "SEC EDGAR", sub: "10-K and 10-Q filings" }, { label: "yfinance", sub: "prices + fundamentals" }],
+      [{ label: "Ingest", sub: "chunk by Item, local embeddings, DVC" }],
+      [{ label: "PostgreSQL + pgvector", sub: "chunks, prices, forecasts" }],
+      [{ label: "LangGraph agent", sub: "route, gather, generate, grade", accent: true }],
+      [
+        { label: "FastAPI + SSE" },
+        { label: "Gradio UI" },
+        { label: "MCP server" },
+        { label: "Power BI" },
+      ],
+    ],
+  },
   "market-research-agent": {
     title: "One question, with a verification loop",
     stages: [

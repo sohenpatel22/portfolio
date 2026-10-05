@@ -165,9 +165,9 @@ export const experience = [
 
 export const skills = [
   { group: "Languages & Data", items: ["Python", "SQL (MySQL, PostgreSQL)", "Pandas", "NumPy", "Statsmodels", "Matplotlib", "Seaborn", "Plotly", "Power BI"] },
-  { group: "ML & Deep Learning", items: ["scikit-learn", "PyTorch", "Transformers", "LSTM", "GMMs", "Time Series", "ROC-AUC / F1 / NDCG"] },
-  { group: "LLMs & Agentic AI", items: ["LangChain", "RAG", "Vector DBs", "Prompt Engineering", "Pydantic", "RAGAS", "DeepEval", "Streamlit", "Hugging Face"] },
-  { group: "MLOps & Deployment", items: ["Git / GitHub", "Docker", "FastAPI", "MLflow", "DVC", "pytest", "CI/CD", "AWS (S3, EC2, SageMaker, Bedrock)"] },
+  { group: "ML & Deep Learning", items: ["scikit-learn", "PyTorch", "Computer Vision (MediaPipe, OpenCV)", "Model Evaluation (F1, NDCG, RAGAS, DeepEval)"] },
+  { group: "LLMs", items: ["LangChain", "LangGraph", "Langfuse", "RAG (hybrid search, Qdrant)", "DSPy", "Claude/OpenAI APIs", "Pydantic", "Streamlit", "Hugging Face"] },
+  { group: "MLOps", items: ["Git", "GitHub Actions", "Docker", "FastAPI", "MLflow", "DVC", "pytest", "Prometheus/Grafana", "ONNX", "AWS (S3, EC2, SageMaker, Bedrock)"] },
 ];
 
 export type Education = {

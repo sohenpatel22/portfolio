@@ -67,7 +67,7 @@ type Msg = { from: "you" | "bot"; text: string; link?: QA["link"]; ai?: boolean 
 const MAX_Q = 280;
 
 const ERRORS: Record<number, string> = {
-  429: "You have reached the question limit for now. The preset questions still work, or email me.",
+  429: "You have used your typed questions for today. The preset questions still work, or email me.",
   503: "AI answers are paused right now. The preset questions still work, or email me.",
   400: "Please keep your question under 280 characters.",
   403: "That request was blocked. Please use the chat on the site itself.",
@@ -152,7 +152,11 @@ export function AskChat() {
         body: JSON.stringify({ messages: history }),
       });
       if (!res.ok || !res.body) {
-        const msg = ERRORS[res.status] ?? "Something went wrong. Please try again, or use the preset questions.";
+        let msg = ERRORS[res.status] ?? "Something went wrong. Please try again, or use the preset questions.";
+        if (res.status === 429) {
+          const d = (await res.json().catch(() => ({}))) as { reason?: string };
+          if (d.reason === "global_daily") msg = "Today's AI question budget has been used up. The preset questions still work, or email me.";
+        }
         if (res.status === 503) setAiEnabled(false);
         setMsgs((m) => [...m, { from: "bot", text: msg }]);
         return;

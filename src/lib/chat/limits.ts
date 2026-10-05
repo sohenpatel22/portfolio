@@ -18,11 +18,25 @@ export type ChatConfig = {
   globalDaily: number;
   maxOutputTokens: number;
   allowMemoryStore: boolean;
+  tokenParam: "max_tokens" | "max_completion_tokens";
+  omitTemperature: boolean;
+  extraBody: Record<string, unknown>;
+  evalDryRun: boolean;
 };
 
 function int(v: string | undefined, d: number): number {
   const n = Number.parseInt(v ?? "", 10);
   return Number.isFinite(n) && n > 0 ? n : d;
+}
+
+function parseJson(v: string | undefined): Record<string, unknown> {
+  if (!v) return {};
+  try {
+    const o = JSON.parse(v);
+    return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
 }
 
 export function getConfig(): ChatConfig {
@@ -32,11 +46,16 @@ export function getConfig(): ChatConfig {
     apiKey,
     baseUrl: (process.env.LLM_BASE_URL ?? "https://api.deepseek.com").replace(/\/+$/, ""),
     model: process.env.LLM_MODEL ?? "deepseek-chat",
-    ipHourly: int(process.env.CHAT_IP_HOURLY_LIMIT, 10),
-    ipDaily: int(process.env.CHAT_IP_DAILY_LIMIT, 25),
-    globalDaily: int(process.env.CHAT_DAILY_LIMIT, 300),
+    ipHourly: int(process.env.CHAT_IP_HOURLY_LIMIT, 5),
+    ipDaily: int(process.env.CHAT_IP_DAILY_LIMIT, 5),
+    globalDaily: int(process.env.CHAT_DAILY_LIMIT, 30),
     maxOutputTokens: int(process.env.CHAT_MAX_OUTPUT_TOKENS, 300),
     allowMemoryStore: process.env.CHAT_ALLOW_MEMORY_STORE === "true" || process.env.NODE_ENV === "development",
+    tokenParam: process.env.LLM_TOKEN_PARAM === "max_completion_tokens" ? "max_completion_tokens" : "max_tokens",
+    omitTemperature: process.env.LLM_OMIT_TEMPERATURE === "true",
+    extraBody: parseJson(process.env.LLM_EXTRA_BODY),
+    // Local evaluation only: stop after the gates and limits instead of calling the model.
+    evalDryRun: process.env.CHAT_EVAL_DRY_RUN === "true",
   };
 }
 

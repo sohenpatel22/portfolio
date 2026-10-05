@@ -16,7 +16,7 @@ export const profile = {
 
 export const stats = [
   { value: 5000, suffix: "+", label: "employees using the Ontario Health News Agent I built" },
-  { value: 124, suffix: "%", label: "F1 gain from Chain-of-Thought prompting (0.25 → 0.57)" },
+  { value: 68, suffix: "%", label: "F1 gain from Chain-of-Thought prompting (0.25 → 0.42)" },
   { value: 129, suffix: "", label: "automated tests behind the 6-agent Deloitte practicum system" },
   { value: 46, suffix: "%", label: "NDCG@10 lift from a two-stage recommender" },
 ];
@@ -39,8 +39,8 @@ export const experience = [
     period: "Jul 2026 – Sep 2026",
     bullets: [
       "Built an enterprise Ontario Health News Agent in Microsoft Copilot Studio end-to-end, deployed to 5,000+ employees org-wide.",
-      "Created a 248-item human-verified gold-standard dataset for 3 healthcare tasks; built an end-to-end LLM evaluation framework for 5 models (GPT-5, Claude, Gemini, MS Copilot, Perplexity) across 13+ metrics using RAGAS, DeepEval and LLM-as-a-Judge.",
-      "Ran prompt-engineering experiments across 4 strategies: Chain-of-Thought on a 5-year dataset doubled the agent's F1 (0.25 → 0.57, +124%) and cut hallucination rate by 51% (78% → 27%).",
+      "Created a 259-item human-verified gold-standard dataset for 3 healthcare tasks; built an end-to-end LLM evaluation framework for 5 models (GPT-5, Claude, Gemini, MS Copilot, Perplexity) across 13+ metrics using RAGAS, DeepEval and LLM-as-a-Judge.",
+      "Ran prompt-engineering experiments across 4 strategies: Chain-of-Thought on a 5-year dataset increased the agent's F1 from 0.25 to 0.42 (+68%) and reduced hallucination rate by 51% (78% → 27%); runs were logged to Langfuse.",
     ],
     more: [
       {
@@ -78,7 +78,7 @@ export const experience = [
       {
         title: "What the experiments showed",
         items: [
-          "Chain-of-thought helped at scale but hurt on the small set. On the 5-year dataset it lifted the best system's F1 from 0.254 to 0.569 and cut hallucination from 78% to 27%. On the short 6-month set the same technique made models over-extract, and hallucination rose above 80%.",
+          "Chain-of-thought helped at scale but hurt on the small set. On the 5-year dataset it raised the Copilot agent's F1 from 0.25 to 0.42 (precision from 0.19 to 0.69) and the strongest general chatbot's from 0.25 to 0.57, cutting hallucination by roughly 50 points in both cases (Copilot 81% to 31%, ChatGPT 78% to 27%). On the short 6-month set the same technique made models over-extract, and hallucination rose above 80%.",
           "Structured, field-by-field prompts raised recall but pushed ChatGPT's hallucination rate from 0% to 40%: a straight recall-precision trade-off.",
           "Consistency across repeat runs varied a lot: under the baseline prompt some general-purpose chatbots scored as low as 0.14, while the Copilot agent with chain-of-thought reached a perfect 1.0.",
           "Even the best system found fewer than half of the leadership changes, so the honest conclusion was a useful first pass that needs human verification, not automation.",

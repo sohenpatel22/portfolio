@@ -13,7 +13,7 @@ const QAS: QA[] = [
   },
   {
     q: "What did you build at Ontario Health?",
-    a: "A Copilot Studio news agent deployed to 5,000+ employees, plus the evaluation behind it: a hand-built gold dataset, five models compared across 13+ metrics, and prompt experiments where chain-of-thought lifted F1 from 0.25 to 0.57.",
+    a: "A Copilot Studio news agent deployed to 5,000+ employees, plus the evaluation behind it: a hand-built gold dataset, five models compared across 13+ metrics, and prompt experiments where chain-of-thought lifted the agent's F1 from 0.25 to 0.42.",
     link: { label: "See the experience", href: "/#experience" },
   },
   {

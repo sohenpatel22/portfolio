@@ -63,6 +63,89 @@ export const projects: Project[] = [
     ],
   },
   {
+    slug: "market-research-agent",
+    tier: "major",
+    title: "Market Research Agent: Agentic RAG over SEC Filings",
+    kicker: "LangGraph · RAG · forecasting · LLMOps",
+    summary:
+      "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and SQL lookups. Answers are cited, a judge model verifies them, and every claim about quality is measured on a golden set.",
+    overview:
+      "Most RAG demos stop at 'it answers'. I built this one to be measured and operated like a production service: a bounded agent loop, retrieval that was ablated rather than assumed, forecasting models compared against honest baselines, per-question cost and tracing, and an evaluation gate in CI. It is also the project where I was most deliberate about reporting what does not work.",
+    metric: { value: "0.95", label: "RAGAS faithfulness on a 99-question golden set, at about $0.001 per question" },
+    tags: ["LLM / Agents", "RAG", "Evaluation", "MLOps", "Time series"],
+    stack: ["Python", "LangGraph", "pgvector", "PostgreSQL", "PyTorch", "FastAPI", "Langfuse", "RAGAS", "DeepEval", "MLflow", "DVC", "Docker", "MCP"],
+    repo: "https://github.com/sohenpatel22/market_research_AI_agent",
+    images: [
+      {
+        src: "/projects/market-research-agent/ui-chat.jpg",
+        alt: "Chat tab showing a cited answer about NVIDIA export controls with a volatility forecast and a quality check",
+        caption: "Ask tab: a cited answer, the model forecast next to its baseline, and the grader's quality verdict.",
+        width: 800,
+        height: 633,
+      },
+      {
+        src: "/projects/market-research-agent/provider-frontier.png",
+        alt: "Chart of answer quality against cost per question for four language models",
+        caption: "Quality versus cost across four models on the same 69 questions.",
+        width: 1125,
+        height: 675,
+      },
+    ],
+    sections: [
+      {
+        title: "How the agent works",
+        items: [
+          "A fixed LangGraph state machine: route, gather, generate, grade, and only on failure rewrite the search query and retry. Retries are capped at two with a recursion limit as a second guard, so cost and latency are bounded and the graph is easy to unit-test with fake models.",
+          "Route refuses trades, personal advice and prompt-override attempts before any tool runs. Gather runs hybrid filing search, the trained forecasters and whitelisted read-only SQL; forecasts and lookups execute once, not once per retry.",
+          "Retrieval fuses Postgres full-text and pgvector search with reciprocal rank fusion over section-aware chunks of 10-K and 10-Q filings (about 5,400 chunks, embedded locally), then reranks with a cross-encoder.",
+          "Final answers are a validated structured object. Citations are checked against what was actually retrieved, and a weak answer is shown as unverified instead of confidently wrong. Filing text is treated as untrusted data: injection-looking lines are stripped and excerpts are wrapped in tags.",
+        ],
+      },
+      {
+        title: "Forecasting models, with the losses included",
+        items: [
+          "A pooled PyTorch LSTM predicts next-week volatility and was compared with HAR-RV, GARCH(1,1), ARIMA and persistence on a chronological 70/15/15 split with purged boundaries. The LSTM wins (RMSE 0.0840 vs 0.0890 for HAR-RV; Diebold-Mariano p = 0.001).",
+          "It does not win everywhere: for XOM the simple HAR baseline is better by 5%. The model card says so.",
+          "The direction classifier is weak (test ROC-AUC 0.62, accuracy 0.55 against a 0.65 always-up base rate). I kept it, labelled it honestly in the UI, and did not present it as a signal.",
+          "A monthly workflow retrains a challenger on all but the latest 60 trading days, scores both on those days, and opens a pull request only if the challenger improves by more than 2%. The current model's holdout error is also compared with its original test error as a drift signal.",
+        ],
+      },
+      {
+        title: "Evaluation that can fail",
+        items: [
+          "A 99-question golden set across eight categories: single-company filings (50), comparisons (6), mixed filing-plus-forecast (4), forecasts (10), database lookups (10), unanswerable (7), out-of-scope (7) and adversarial (5). The original 38 questions were frozen when the set grew.",
+          "Baseline: faithfulness 0.95, answer relevancy 0.86, context precision 0.83, context recall 0.92. Refusals, tool use and numeric facts were 100%, and all 7 unanswerable questions were handled by saying what was missing. Latency was 4.3 s at the median and 12.4 s at p95.",
+          "The expanded set found a real bug: comparisons across companies cited both companies only 4 times in 6, because all retrieved excerpts came from one company. Searching each company separately and interleaving the results fixed it to 6 of 6.",
+          "Retrieval ablation on 50 filing questions (NDCG@6): dense 0.461, keyword 0.284, plain hybrid 0.439, hybrid plus cross-encoder rerank 0.559. Plain RRF slightly trailed dense-only here, and the rerank was the clear win, so it is on by default.",
+          "A small DeepEval gate runs in CI against a committed corpus, so a prompt or retrieval change that breaks quality fails the build.",
+        ],
+      },
+      {
+        title: "Choosing the model by cost per correct answer",
+        items: [
+          "The same agent code and 69 questions ran on four models. DeepSeek cost $0.0008 per question at 0.908 faithfulness, GPT-4o mini $0.0005 at 0.826, Claude Haiku 4.5 $0.0045 at 0.934, and Claude Sonnet 5.5 $0.0111 at 0.916. The whole comparison cost about $1.40.",
+          "The cheapest model wrongly refused four legitimate questions, which cost it citations too, so unit cost was the wrong number. Paying 14 times more for the largest model bought no meaningful faithfulness here. I stated the caveats alongside: one run per model, 20 filing questions for RAGAS, and a judge from one of the compared providers.",
+        ],
+      },
+      {
+        title: "Production engineering",
+        items: [
+          "FastAPI service with a validated chat endpoint, a server-sent-events streaming endpoint that reports each agent step, a forecast endpoint, a health check that works without an LLM key, request validation and per-client rate limiting. A Gradio UI sits on the same code path.",
+          "One Langfuse trace per question with route, tool calls, every LLM call, tokens, cost and latency, plus quality scores and a prompt registry. LLM calls can be cached on disk so re-running evaluations is free.",
+          "Multi-stage Docker image: non-root user, no compilers or training libraries, models baked in so it starts offline, and a health check. CI lints, runs 130 tests, runs the evaluation gate, builds the image and smoke-tests the running container against Postgres.",
+          "Data is versioned with DVC, the production database is seeded weekly by a workflow, and the same tools are exposed through an MCP server so any MCP client can call them. Six short architecture decision records document the trade-offs.",
+        ],
+      },
+      {
+        title: "Status",
+        items: [
+          "The system runs end to end locally with one command (make docker-up). The deployment automation, a Neon Postgres database and a Hugging Face Space deploy workflow, is built, but public hosting is on hold because the current account plan has no managed CPU hardware for Docker Spaces. The decision record explains this and lists hosting options.",
+          "Research and education only. The forecasts are statistical estimates, not investment advice.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "asl-fingerspelling",
     tier: "major",
     title: "ASL Fingerspelling Recognition",

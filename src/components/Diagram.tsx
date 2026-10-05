@@ -12,6 +12,21 @@ const DIAGRAMS: Record<string, { title: string; stages: { label: string; sub?: s
       [{ label: "Verdict + confidence", sub: "scored vs baseline", accent: true }],
     ],
   },
+  "market-research-agent": {
+    title: "One question, with a verification loop",
+    stages: [
+      [{ label: "Question", sub: "refused if out of scope" }],
+      [{ label: "Route", sub: "pick tools" }],
+      [
+        { label: "Hybrid filing search", sub: "RRF + cross-encoder" },
+        { label: "Forecast models", sub: "LSTM vs HAR-RV" },
+        { label: "SQL lookups", sub: "whitelisted, read-only" },
+      ],
+      [{ label: "Generate", sub: "cited draft" }],
+      [{ label: "Grade", sub: "retry with rewritten query", accent: true }],
+      [{ label: "Verified answer", sub: "citations checked", accent: true }],
+    ],
+  },
   "asl-fingerspelling": {
     title: "From video to text",
     stages: [

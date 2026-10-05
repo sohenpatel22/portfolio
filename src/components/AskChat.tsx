@@ -28,7 +28,7 @@ const QAS: QA[] = [
   },
   {
     q: "Tell me about the Market Research Agent",
-    a: "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and SQL lookups, with a judge that verifies each answer. It reached 0.95 faithfulness on a 99-question golden set at about $0.001 per question, and I ablated the retrieval and compared four models by cost per correct answer.",
+    a: "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and database lookups. A judge model verifies each answer against its sources and triggers a bounded retry. It reached 0.95 faithfulness on a 99-question golden set at about $0.0013 per question; retrieval was ablated (a cross-encoder reranker lifted NDCG@6 from 0.44 to 0.56) and four models were compared on cost per correct answer. The case study covers the architecture, forecasting models, evaluation, CI and honest limitations.",
     link: { label: "Open the case study", href: "/projects/market-research-agent" },
   },
   {

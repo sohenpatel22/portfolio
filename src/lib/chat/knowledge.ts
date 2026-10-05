@@ -9,17 +9,21 @@ const STOP = new Set(
   "the and for with that this from what which who whom how does did are was were have has had you your his her their about into over than then them they will would could should can any all but not out our use used using also tell give show please sohen".split(" "),
 );
 
+const SHORT_OK = new Set(["ci", "ml", "ui", "ta"]);
+
 function tokenize(s: string): string[] {
   return s
     .toLowerCase()
     .split(/[^a-z0-9+#.]+/)
     .map((t) => t.replace(/^\.+|\.+$/g, ""))
-    .filter((t) => t.length > 2 && !STOP.has(t));
+    .filter((t) => (t.length > 2 || SHORT_OK.has(t)) && !STOP.has(t));
 }
 
-function mk(id: string, title: string, text: string, href?: string): Chunk {
+function mk(id: string, title: string, text: string, href?: string, scoreTitle?: string): Chunk {
   const tokens = new Map<string, number>();
-  for (const t of tokenize(`${title} ${text}`)) tokens.set(t, (tokens.get(t) ?? 0) + 1);
+  // The section title is repeated to weight it; the (long) project title is only used for display.
+  const scored = scoreTitle ? `${scoreTitle} ${scoreTitle} ${text}` : `${title} ${text}`;
+  for (const t of tokenize(scored)) tokens.set(t, (tokens.get(t) ?? 0) + 1);
   return { id, title, href, text, tokens };
 }
 
@@ -74,16 +78,34 @@ function build() {
 
   for (const p of projects) {
     const href = `/projects/${p.slug}`;
+    const facts = p.facts ? ` Key facts: ${p.facts.map((f) => `${f.k} ${f.v}`).join("; ")}.` : "";
     chunks.push(
       mk(
         `proj-${p.slug}`,
         `${p.title} (${p.kicker})`,
-        `${p.summary} Headline result: ${p.metric.value}, ${p.metric.label}. Stack: ${p.stack.join(", ")}. ${p.overview}`,
+        `${p.summary} Headline result: ${p.metric.value}, ${p.metric.label}. Stack: ${p.stack.join(", ")}. ${p.overview}${facts}`,
         href,
       ),
     );
     for (const s of p.sections) {
-      chunks.push(mk(`proj-${p.slug}-${s.title}`, `${p.title}: ${s.title}`, s.items.join(" "), href));
+      const parts: string[] = [];
+      if (s.intro) parts.push(s.intro);
+      if (s.table) {
+        parts.push(`${s.table.caption ? `${s.table.caption}: ` : ""}${s.table.rows.map((r) => r.map((c, i) => `${s.table!.columns[i]}: ${c}`).join(", ")).join("; ")}.`);
+      }
+      parts.push(...s.items);
+      // Pack into chunks of about 1,200 characters so retrieval returns the relevant part of a long section.
+      let cur = "";
+      let n = 0;
+      const flush = () => {
+        if (cur.trim()) chunks.push(mk(`proj-${p.slug}-${s.title}-${n++}`, `${p.title}: ${s.title}`, cur.trim(), href, s.title));
+        cur = "";
+      };
+      for (const part of parts) {
+        if (cur && cur.length + part.length > 1200) flush();
+        cur += `${part} `;
+      }
+      flush();
     }
   }
   chunks.push(
@@ -107,13 +129,55 @@ function build() {
 }
 
 /** Keyword retrieval (TF-IDF style) over the site's own content. Cheap, deterministic, no embeddings API. */
+const SYNONYMS: Record<string, string[]> = {
+  llm: ["model", "models", "provider", "providers"],
+  llms: ["model", "models", "provider", "providers"],
+  decide: ["choosing", "comparison", "cost"],
+  choose: ["choosing", "comparison", "cost"],
+  chose: ["choosing", "comparison", "cost"],
+  deployed: ["deployment", "hosting", "deploy"],
+  deploy: ["deployment", "hosting"],
+  public: ["hosting"],
+  publicly: ["hosting"],
+  hosted: ["hosting"],
+  live: ["hosting", "demo"],
+  verify: ["grader", "grade", "citations", "verified"],
+  verifies: ["grader", "grade", "citations", "verified"],
+  verification: ["grader", "grade", "citations"],
+  check: ["grader", "grade", "checks"],
+  ci: ["workflows", "lint", "docker", "gate", "delivery"],
+  cicd: ["workflows", "lint", "docker", "gate", "delivery"],
+  pipeline: ["workflows", "delivery", "flow"],
+  fail: ["loses", "limits", "weak", "weakness", "openly"],
+  fails: ["loses", "limits", "weak", "weakness", "openly"],
+  failure: ["loses", "limits", "weak", "weakness", "openly"],
+  weakness: ["loses", "limits", "weak", "openly"],
+  weaknesses: ["loses", "limits", "weak", "openly"],
+  cost: ["cheapest", "price", "dollars", "cheap"],
+  cheap: ["cheapest", "cost", "price"],
+  accurate: ["accuracy", "faithfulness", "results"],
+  accuracy: ["faithfulness", "results"],
+  metrics: ["results", "faithfulness", "ragas"],
+  golden: ["evaluation", "set", "questions"],
+  tested: ["evaluation", "tests", "testing"],
+  testing: ["evaluation", "tests"],
+  security: ["safe", "injection", "refusals", "guardrails"],
+  safety: ["safe", "injection", "refusals", "guardrails"],
+  data: ["ingestion", "pipeline", "chunking", "sources"],
+  architecture: ["flow", "overview", "system"],
+  learned: ["learn", "next"],
+};
+
 export function buildContext(queries: string[], maxChars = 6500): string {
   const { chunks, core, idf } = build();
   const q = new Map<string, number>();
   queries.forEach((text, i) => {
     // weight the latest question most, earlier turns less
     const w = i === queries.length - 1 ? 1 : 0.5;
-    for (const t of tokenize(text)) q.set(t, Math.max(q.get(t) ?? 0, w));
+    for (const t of tokenize(text)) {
+      q.set(t, Math.max(q.get(t) ?? 0, w));
+      for (const syn of SYNONYMS[t] ?? []) q.set(syn, Math.max(q.get(syn) ?? 0, w * 0.6));
+    }
   });
 
   const scored = chunks
@@ -135,7 +199,7 @@ export function buildContext(queries: string[], maxChars = 6500): string {
 
   let out = `${core}\n`;
   for (const c of picked) {
-    const block = `\n[${c.title}${c.href ? ` | page: ${c.href}` : ""}]\n${c.text.slice(0, 1400)}\n`;
+    const block = `\n[${c.title}${c.href ? ` | page: ${c.href}` : ""}]\n${c.text.slice(0, 1800)}\n`;
     if (out.length + block.length > maxChars) break;
     out += block;
   }

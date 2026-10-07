@@ -33,6 +33,11 @@ const QAS: QA[] = [
     link: { label: "Open the case study", href: "/projects/market-research-agent" },
   },
   {
+    q: "Tell me about the ASL fingerspelling project",
+    a: "A Conformer-Transformer that turns video of ASL fingerspelling into text, scored on 14 signers it never saw (test CER 0.307; the first deployed model was 0.334). The error analysis found that it fails by making text up when MediaPipe cannot see the hands, so I added a confidence rule that flags 40% of clips and catches 98.6% of the badly failed ones. I also tried six accuracy ideas and a from-scratch retraining that did not beat it, and reported that. Around it: DVC, MLflow with a gated registry, a monitored FastAPI service, ONNX (1.6x faster), CI with a metric gate and a free live demo.",
+    link: { label: "Open the case study", href: "/projects/asl-fingerspelling" },
+  },
+  {
     q: "How do you evaluate LLM systems?",
     a: "Against a hand-built gold set, with recall split by confidence tier, every unmatched answer adjudicated (real, hallucinated, out of scope), bootstrap confidence intervals and a baseline to beat. I also debug the evaluator itself: I found and fixed several scoring bugs that were distorting results.",
   },

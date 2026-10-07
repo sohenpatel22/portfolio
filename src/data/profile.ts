@@ -201,7 +201,7 @@ export const education: Education[] = [
     note: "CGPA 8.40/10",
     highlights: [{ label: "Exam", text: "All-India Rank 3465 in GATE XE 2023, a national-level engineering examination." }],
     patents: {
-      intro: "Filed from my ISRO research internship.",
+      intro: "Provisional patent applications, filed from my ISRO research internship.",
       items: [
         {
           title: "Coarse Actuation Mechanism for Primary Optics Deployment in CubeSat-Based Space Telescopes for Sub-Meter Resolution Imaging Applications",

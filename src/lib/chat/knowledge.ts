@@ -57,7 +57,7 @@ function build() {
     const extra = [
       ...ed.highlights.map((h) => `${h.label}: ${h.text}`),
       ed.patents
-        ? `Patents: ${ed.patents.items.map((p) => `${p.title} (${p.number}, filed ${p.filed})`).join("; ")}`
+        ? `Provisional patent applications (provisional filings, not granted patents): ${ed.patents.items.map((p) => `${p.title} (${p.number}, filed ${p.filed})`).join("; ")}`
         : "",
       ed.showCoursework ? `Coursework: ${coursework.map((c) => c.name).join(", ")}.` : "",
     ].filter(Boolean);

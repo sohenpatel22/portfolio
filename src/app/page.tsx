@@ -165,7 +165,7 @@ export default function Home() {
                 )}
                 {e.patents && (
                   <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-                    <dt className="eyebrow pt-0.5">Patents</dt>
+                    <dt className="eyebrow pt-0.5">Provisional patents</dt>
                     <dd>
                       <p className="text-muted">{e.patents.intro}</p>
                       <ul className="mt-2 space-y-3 leading-relaxed">

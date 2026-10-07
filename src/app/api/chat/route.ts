@@ -212,16 +212,20 @@ export async function POST(req: Request) {
     async pull(controller) {
       if (stopped) return;
       try {
-        const chunk = pending ? { done: false, value: pending } : await reader.read();
-        pending = null;
-        if (chunk.done) {
-          if (!stopped) {
-            const rest = leaksPrompt(acc) ? LEAK_REPLACEMENT : acc.slice(emitted);
-            if (rest) controller.enqueue(encoder.encode(rest));
-          }
-          done();
-          controller.close();
-          return;
+        // Keep reading until something is sent or the stream ends: a chunk that adds no text beyond the
+        // hold-back window sends nothing, and a pull that sends nothing is never called again.
+        for (;;) {
+          const before = emitted;
+          const chunk = pending ? { done: false, value: pending } : await reader.read();
+          pending = null;
+          if (chunk.done) {
+            if (!stopped) {
+              const rest = leaksPrompt(acc) ? LEAK_REPLACEMENT : acc.slice(emitted);
+              if (rest) controller.enqueue(encoder.encode(rest));
+            }
+            done();
+            controller.close();
+            return;
         }
         buffer += decoder.decode(chunk.value, { stream: true });
         const lines = buffer.split("\n");
@@ -244,7 +248,7 @@ export async function POST(req: Request) {
             controller.enqueue(encoder.encode(emitted === 0 ? LEAK_REPLACEMENT : ` ${LEAK_REPLACEMENT}`));
             done();
             controller.close();
-            void reader.cancel();
+            void reader.cancel().catch(() => {});
             return;
           }
           const safeEnd = Math.max(emitted, acc.length - HOLD_BACK);
@@ -253,6 +257,8 @@ export async function POST(req: Request) {
             emitted = safeEnd;
           }
         }
+        if (emitted > before) return;
+        }
       } catch {
         done();
         controller.close();
@@ -260,7 +266,7 @@ export async function POST(req: Request) {
     },
     cancel() {
       done();
-      void reader.cancel();
+      void reader.cancel().catch(() => {});
     },
   });
 

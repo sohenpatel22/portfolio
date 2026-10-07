@@ -157,7 +157,11 @@ export function AskChat() {
           const d = (await res.json().catch(() => ({}))) as { reason?: string };
           if (d.reason === "global_daily") msg = "Today's AI question budget has been used up. The preset questions still work, or email me.";
         }
-        if (res.status === 503) setAiEnabled(false);
+        if (res.status === 503) {
+          const d = (await res.clone().json().catch(() => ({}))) as { error?: string };
+          if (d.error === "busy") msg = "The AI is busy right now. Please try again in a little while, or use the preset questions.";
+          else setAiEnabled(false);
+        }
         setMsgs((m) => [...m, { from: "bot", text: msg }]);
         return;
       }

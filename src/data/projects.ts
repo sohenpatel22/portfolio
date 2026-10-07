@@ -1,4 +1,5 @@
 import { marketResearchAgent } from "./market-agent";
+import { aslFingerspelling } from "./asl";
 
 export type Table = { caption?: string; columns: string[]; rows: string[][] };
 
@@ -77,49 +78,7 @@ export const projects: Project[] = [
     ],
   },
   marketResearchAgent,
-  {
-    slug: "asl-fingerspelling",
-    tier: "major",
-    title: "ASL Fingerspelling Recognition",
-    kicker: "Deep learning · MLOps · live demo",
-    summary:
-      "Video of ASL fingerspelling in, text out. A Conformer-Transformer reads hand landmarks, wrapped in the full MLOps loop: versioned data, tracked experiments, a gated model registry, monitored serving and CI.",
-    overview:
-      "This started as a course project and became a study in what it takes to move a notebook model into a package you can test, serve and monitor. The model is the smaller half of the repo.",
-    metric: { value: "27.8M", label: "parameters · test CER 0.44, split by signer" },
-    tags: ["Deep Learning", "MLOps"],
-    stack: ["PyTorch", "MediaPipe", "OpenCV", "FastAPI", "DVC", "MLflow", "Prometheus", "Docker", "ONNX", "Gradio"],
-    repo: "https://github.com/sohenpatel22/ASL-Fingerspelling-Recognition",
-    demo: "https://huggingface.co/spaces/SohenP/asl-fingerspelling",
-    sections: [
-      {
-        title: "Model",
-        items: [
-          "MediaPipe extracts 21 landmarks per hand per frame, giving an 84-value vector (x, y for two hands, zeros when a hand is missing). Each sequence is centred on the wrist and scaled so the model sees hand shape rather than position, then resampled or padded to 64 frames.",
-          "Encoder: a Conformer stack (macaron feed-forward blocks, multi-head self-attention, depthwise-convolution module). Decoder: a Transformer decoder over a 62-token character vocabulary. Inference uses beam search (width 5, length penalty 0.6), grid-searched.",
-          "The split is 70/15/15 by signer, so validation and test signers never appear in training.",
-        ],
-      },
-      {
-        title: "Engineering around it",
-        items: [
-          "The notebooks became an installable package with YAML configs, command-line overrides, a smoke config that trains on generated data, and nine test files.",
-          "DVC chains preprocess, train and evaluate so only stale stages rerun. MLflow logs params, metrics and the git commit, and a promotion step only moves the 'production' alias if test CER clears a threshold.",
-          "A FastAPI service exposes /predict for video, /predict/landmarks for raw features and Prometheus metrics (latency, beam-search time, prediction confidence, frames with no hand). A drift monitor compares live inputs to a reference built from training data, with Grafana dashboards and alert rules in docker-compose.",
-          "CI trains a toy model, gates on CER, exports to ONNX, builds the Docker image and calls the running container. A workflow deploys the demo to a Hugging Face Space.",
-          "A post-processing layer (Llama 3.1 8B via Groq, temperature 0) maps noisy character output onto a constrained vocabulary or a fixed set of phrases for the demo.",
-        ],
-      },
-      {
-        title: "What I learned",
-        items: [
-          "The per-epoch CER in my original notebook was computed with teacher forcing, so it flattered the model. The trainer now early-stops on greedy-decoded CER, which is what inference actually does.",
-          "Adding 50K supplemental sequences moved test CER by only about 0.01, so more data was not the bottleneck.",
-          "The test set is about 15% of signers, so it is noisy. The evaluation script reports per-signer CER and a bootstrap interval instead of one number.",
-        ],
-      },
-    ],
-  },
+  aslFingerspelling,
   {
     slug: "consulting-workplan-agent",
     tier: "major",

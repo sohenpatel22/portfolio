@@ -39,8 +39,8 @@ Because the site is public, the assistant is built so that abuse cannot run up a
 |---|---|
 | Free gate | Before any model call, questions that are off topic, jailbreak attempts, probes for keys or infrastructure, requests for personal details, advice requests, links, or cost-abuse patterns get a canned reply. They cost nothing and use no quota. |
 | Server-only key | `LLM_API_KEY` is read on the server only and is never sent to the browser. The assistant is off until it is set. |
-| Per-visitor limit | 5 typed questions per visitor (hashed IP) per day, stored in Redis so it holds across serverless instances. |
-| Global daily budget | 30 typed questions per day across everyone. After that the text box refuses until the next UTC day. |
+| Per-visitor limit | 5 typed questions per visitor (hashed IP) per day on standard processing, 10 on OpenAI Flex (half the price). Stored in Redis so it holds across serverless instances. |
+| Global daily budget | 30 typed questions per day across everyone on standard processing, 100 on Flex. After that the text box refuses until the next UTC day. |
 | Fail closed | If Redis is missing or down in production, the endpoint refuses instead of calling the model. |
 | Small requests | Questions are capped at 280 characters. Only the visitor's own questions are sent (client-supplied assistant messages are ignored). Retrieved context is about 1.5k tokens and output is capped at 300 tokens. |
 | Model prompt | Answers only from retrieved site content, and replies with a fixed refusal to anything else. |
@@ -49,7 +49,9 @@ Because the site is public, the assistant is built so that abuse cannot run up a
 | No tools, no secrets | The model can only read public site text. |
 | Kill switch | Set `CHAT_ENABLED=false` in Vercel and redeploy to switch the text box off. Presets keep working. |
 
-**Worst-case cost.** Every request is bounded, so the monthly ceiling is questions x cost per question: about 2k input and 150 to 300 output tokens, roughly $0.0003 to $0.001 per question on DeepSeek `deepseek-flash` or OpenAI `gpt-6-luna`. At 30 per day that is well under $1 per month. As a last line of defence, use prepaid credit with auto-recharge off so the provider itself stops at a fixed amount.
+**Worst-case cost.** Every request is bounded, so the monthly ceiling is questions x cost per question: about 2k input and 150 to 300 output tokens, roughly $0.0003 to $0.001 per question on DeepSeek `deepseek-flash` or OpenAI `gpt-6-luna`. At 30 per day that is well under $1 per month.
+
+**Flex with a strict fallback.** With `LLM_SERVICE_TIER=flex` the app asks OpenAI for Flex processing first (about half the price, but slower and sometimes unavailable). If Flex is slow or returns 429, it retries once on standard processing. Those fallback answers cost twice as much, so they have their own budgets (`CHAT_FALLBACK_IP_DAILY_LIMIT`, default 5 per visitor per day, and `CHAT_FALLBACK_DAILY_LIMIT`, default 30 per day overall). When a budget is spent the visitor sees a polite "busy, try again later" message and nothing is billed. Flex through streaming Chat Completions is documented as a beta feature; check it with one real request before relying on it. As a last line of defence, use prepaid credit with auto-recharge off so the provider itself stops at a fixed amount.
 
 **Reasoning models.** Both recommended models can bill hidden "thinking" tokens as output. Turn thinking off (see `.env.example`), or the cost estimate above does not hold.
 

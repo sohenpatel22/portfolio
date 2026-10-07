@@ -139,6 +139,10 @@ export function AskChat() {
     const q = input.trim();
     if (!q || typing || q.length > MAX_Q) return;
     setInput("");
+    // A typed question that is exactly a preset gets the stored answer: no model call, no cost.
+    const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const preset = QAS.find((x) => norm(x.q) === norm(q));
+    if (preset) return ask(preset);
     const history = [...msgs, { from: "you" as const, text: q }]
       .filter((m) => m.from === "you" || m.ai)
       .slice(-4)

@@ -168,6 +168,21 @@ const SYNONYMS: Record<string, string[]> = {
   learned: ["learn", "next"],
 };
 
+/**
+ * Questions about a named topic always get that topic's own section, because long project write-ups can
+ * out-score a short section on raw keyword counts. Keyword scoring fills the remaining slots.
+ */
+const PINS: [RegExp, (id: string) => boolean][] = [
+  [/\b(study|studied|studying|gpa|grades?|graduat\w*|degrees?|majors?|majored|undergrad\w*|bachelor\w*|masters?|meng|universit\w*|school|college|educat\w*|thesis|dissertation|scholarship|patents?|gate|courses?|coursework|classes|taken)\b/, (id) => id.startsWith("edu-")],
+  [/\b(thesis|dissertation|research project|capstone)\b/, (id) => id === "proj-legal-agents"],
+  [/\b(deloitte|practicum|sponsored)\b/, (id) => id.startsWith("exp-Deloitte")],
+  [/\b(ontario health|oh agent|news agent|copilot)\b/, (id) => id.startsWith("exp-Ontario Health")],
+  [/\b(am\/ns|amns|arcelor\w*|nippon|steel|trainee|plant)\b/, (id) => id.startsWith("exp-ArcelorMittal")],
+  [/\b(teaching assistant|teach\w*|ta role|tutorial|mie\d+)\b/, (id) => id === "exp-University of Toronto"],
+  [/\b(skills?|tech stack|technologies|tools|languages|frameworks|proficient)\b/, (id) => id === "skills"],
+  [/\b(volunteer\w*|awards?|recognition|hpair|rfs|aga khan|hobbies|extracurricular\w*|mentor\w*)\b/, (id) => id === "extracurricular"],
+];
+
 export function buildContext(queries: string[], maxChars = 6500): string {
   const { chunks, core, idf } = build();
   const q = new Map<string, number>();
@@ -192,7 +207,17 @@ export function buildContext(queries: string[], maxChars = 6500): string {
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s);
 
-  let picked = scored.slice(0, 5).map((x) => x.c);
+  // Latest question first, so its pins win when space is short.
+  const pinned: Chunk[] = [];
+  for (const text of [...queries].reverse()) {
+    const t = text.toLowerCase();
+    for (const [re, match] of PINS) {
+      if (!re.test(t)) continue;
+      for (const c of chunks) if (match(c.id) && !pinned.includes(c)) pinned.push(c);
+    }
+  }
+  const topped = scored.map((x) => x.c).filter((c) => !pinned.includes(c));
+  let picked = [...pinned.slice(0, 4), ...topped].slice(0, 5);
   if (picked.length === 0) {
     picked = chunks.filter((c) => c.id === "about" || c.id.startsWith("exp-")).filter((c) => !c.id.includes("--")).slice(0, 4);
   }

@@ -1,6 +1,6 @@
 import { buildContext, systemPrompt } from "@/lib/chat/knowledge";
 import { LEAK_REPLACEMENT, leaksPrompt, screen, type GateReason } from "@/lib/chat/guard";
-import { checkLimits, clientIp, getConfig, isStoreConfigured, sameOrigin } from "@/lib/chat/limits";
+import { checkFallback, checkLimits, clientIp, getConfig, isStoreConfigured, sameOrigin, type ChatConfig } from "@/lib/chat/limits";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -59,6 +59,56 @@ const HARD: GateReason[] = ["injection", "secrets", "private", "advice", "link",
 const gate = (q: string) => screen(q);
 const FOLLOW_UP = /^(and|also|what about|how about|tell me more|more|why|how|which|when|where|who|elaborate|go on|continue|details|can you (explain|elaborate|expand)|could you (explain|elaborate|expand))\b/;
 
+
+class UpstreamError extends Error {
+  constructor(public status: number) {
+    super(`upstream ${status}`);
+  }
+  /** Worth retrying on standard processing: timeouts, capacity (429) and server errors. */
+  get retryable() {
+    return this.status === 0 || this.status === 408 || this.status === 429 || this.status >= 500;
+  }
+}
+
+type Opened = { reader: ReadableStreamDefaultReader<Uint8Array>; first: Uint8Array | null; done: () => void };
+
+/** Opens a streaming completion. With firstByteMs set, gives up (and aborts) if nothing arrives in time. */
+async function openStream(cfg: ChatConfig, payload: Record<string, unknown>, firstByteMs: number | null): Promise<Opened> {
+  const ac = new AbortController();
+  const total = setTimeout(() => ac.abort(), 25_000);
+  const done = () => clearTimeout(total);
+  // The first-byte deadline covers the whole wait (headers and first chunk): a queued flex request can
+  // hold back its headers as well as its body.
+  let timedOut = false;
+  const deadline = firstByteMs
+    ? setTimeout(() => {
+        timedOut = true;
+        ac.abort();
+      }, firstByteMs)
+    : undefined;
+  try {
+    const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${cfg.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: ac.signal,
+      cache: "no-store",
+    });
+    if (!res.ok || !res.body) throw new UpstreamError(res.status);
+    const reader = res.body.getReader();
+    if (!firstByteMs) return { reader, first: null, done };
+    const first = await reader.read();
+    clearTimeout(deadline);
+    return { reader, first: first.done ? null : (first.value ?? null), done };
+  } catch (e) {
+    clearTimeout(deadline);
+    done();
+    ac.abort();
+    if (timedOut) throw new UpstreamError(408);
+    throw e instanceof UpstreamError ? e : new UpstreamError(0);
+  }
+}
+
 export async function POST(req: Request) {
   const cfg = getConfig();
   if (!cfg.enabled) return json({ error: "disabled" }, 503);
@@ -116,33 +166,41 @@ export async function POST(req: Request) {
     });
   }
 
-  const payload: Record<string, unknown> = {
+  const base: Record<string, unknown> = {
     model: cfg.model,
     stream: true,
     [cfg.tokenParam]: cfg.maxOutputTokens,
     messages: [{ role: "system", content: prompt }, ...chat],
     ...cfg.extraBody,
   };
-  if (!cfg.omitTemperature) payload.temperature = 0.2;
+  if (!cfg.omitTemperature) base.temperature = 0.2;
 
-  let upstream: Response;
+  // 3. Call the model. In flex mode try flex first; on a slow or unavailable flex, fall back to standard
+  // processing, but only while the (stricter) fallback budgets last.
+  let opened: Opened;
+  let tier: "flex" | "standard" | "fallback" = cfg.tier;
   try {
-    upstream = await fetch(`${cfg.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${cfg.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(25_000),
-      cache: "no-store",
-    });
-  } catch {
-    return json({ error: "upstream" }, 502);
-  }
-  if (!upstream.ok || !upstream.body) {
-    console.error("chat upstream status", upstream.status);
-    return json({ error: "upstream" }, 502);
+    opened = await openStream(cfg, cfg.tier === "flex" ? { ...base, service_tier: "flex" } : base, cfg.tier === "flex" ? cfg.flexFirstByteMs : null);
+  } catch (e) {
+    const err = e instanceof UpstreamError ? e : new UpstreamError(0);
+    console.error("chat upstream failed", { tier: cfg.tier, status: err.status });
+    if (!(cfg.tier === "flex" && cfg.fallback && err.retryable)) return json({ error: "upstream" }, 502);
+    const fb = await checkFallback(cfg, clientIp(req));
+    if (!fb.ok) {
+      if (fb.reason === "store_unavailable") return json({ error: "unavailable" }, 503);
+      return json({ error: "busy", reason: fb.reason }, 503, { "Retry-After": "600" });
+    }
+    try {
+      opened = await openStream(cfg, base, null);
+      tier = "fallback";
+    } catch (e2) {
+      console.error("chat fallback failed", { status: e2 instanceof UpstreamError ? e2.status : 0 });
+      return json({ error: "upstream" }, 502);
+    }
   }
 
-  const reader = upstream.body.getReader();
+  const { reader, done } = opened;
+  let pending: Uint8Array | null = opened.first;
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
   let buffer = "";
@@ -154,16 +212,18 @@ export async function POST(req: Request) {
     async pull(controller) {
       if (stopped) return;
       try {
-        const { done, value } = await reader.read();
-        if (done) {
+        const chunk = pending ? { done: false, value: pending } : await reader.read();
+        pending = null;
+        if (chunk.done) {
           if (!stopped) {
             const rest = leaksPrompt(acc) ? LEAK_REPLACEMENT : acc.slice(emitted);
             if (rest) controller.enqueue(encoder.encode(rest));
           }
+          done();
           controller.close();
           return;
         }
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(chunk.value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
         for (const line of lines) {
@@ -182,6 +242,7 @@ export async function POST(req: Request) {
           if (leaksPrompt(acc)) {
             stopped = true;
             controller.enqueue(encoder.encode(emitted === 0 ? LEAK_REPLACEMENT : ` ${LEAK_REPLACEMENT}`));
+            done();
             controller.close();
             void reader.cancel();
             return;
@@ -193,10 +254,12 @@ export async function POST(req: Request) {
           }
         }
       } catch {
+        done();
         controller.close();
       }
     },
     cancel() {
+      done();
       void reader.cancel();
     },
   });
@@ -208,6 +271,7 @@ export async function POST(req: Request) {
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
       "X-Chat-Gate": "passed",
+      "X-Chat-Tier": tier,
     },
   });
 }

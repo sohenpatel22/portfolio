@@ -22,6 +22,15 @@ export type ChatConfig = {
   omitTemperature: boolean;
   extraBody: Record<string, unknown>;
   evalDryRun: boolean;
+  /** "flex" sends service_tier=flex (cheaper, slower, can be unavailable); "standard" is normal processing. */
+  tier: "flex" | "standard";
+  /** In flex mode, retry on standard processing when flex is slow or unavailable. */
+  fallback: boolean;
+  /** How long to wait for the first bytes from flex before falling back. */
+  flexFirstByteMs: number;
+  /** Strict budgets that apply only to requests served by the (twice as expensive) fallback. */
+  fallbackIpDaily: number;
+  fallbackDaily: number;
 };
 
 function int(v: string | undefined, d: number): number {
@@ -41,14 +50,17 @@ function parseJson(v: string | undefined): Record<string, unknown> {
 
 export function getConfig(): ChatConfig {
   const apiKey = process.env.LLM_API_KEY ?? "";
+  const tier = process.env.LLM_SERVICE_TIER === "flex" ? "flex" : "standard";
+  // Flex costs about half as much, so it earns larger budgets. Without it the strict budgets apply.
+  const d = tier === "flex" ? { hourly: 10, daily: 10, global: 100 } : { hourly: 5, daily: 5, global: 30 };
   return {
     enabled: apiKey.length > 0 && process.env.CHAT_ENABLED !== "false",
     apiKey,
     baseUrl: (process.env.LLM_BASE_URL ?? "https://api.deepseek.com").replace(/\/+$/, ""),
     model: process.env.LLM_MODEL ?? "deepseek-chat",
-    ipHourly: int(process.env.CHAT_IP_HOURLY_LIMIT, 5),
-    ipDaily: int(process.env.CHAT_IP_DAILY_LIMIT, 5),
-    globalDaily: int(process.env.CHAT_DAILY_LIMIT, 30),
+    ipHourly: int(process.env.CHAT_IP_HOURLY_LIMIT, d.hourly),
+    ipDaily: int(process.env.CHAT_IP_DAILY_LIMIT, d.daily),
+    globalDaily: int(process.env.CHAT_DAILY_LIMIT, d.global),
     maxOutputTokens: int(process.env.CHAT_MAX_OUTPUT_TOKENS, 300),
     allowMemoryStore: process.env.CHAT_ALLOW_MEMORY_STORE === "true" || process.env.NODE_ENV === "development",
     tokenParam: process.env.LLM_TOKEN_PARAM === "max_completion_tokens" ? "max_completion_tokens" : "max_tokens",
@@ -56,6 +68,11 @@ export function getConfig(): ChatConfig {
     extraBody: parseJson(process.env.LLM_EXTRA_BODY),
     // Local evaluation only: stop after the gates and limits instead of calling the model.
     evalDryRun: process.env.CHAT_EVAL_DRY_RUN === "true",
+    tier,
+    fallback: tier === "flex" && process.env.LLM_FLEX_FALLBACK !== "false",
+    flexFirstByteMs: int(process.env.LLM_FLEX_FIRST_BYTE_MS, 8000),
+    fallbackIpDaily: int(process.env.CHAT_FALLBACK_IP_DAILY_LIMIT, 5),
+    fallbackDaily: int(process.env.CHAT_FALLBACK_DAILY_LIMIT, 30),
   };
 }
 
@@ -134,6 +151,27 @@ export async function checkLimits(cfg: ChatConfig, ip: string): Promise<LimitRes
     if ((await store.incr(`chat:ip:${id}:h:${hour}`, 2 * 3600)) > cfg.ipHourly) return { ok: false, reason: "ip_hourly" };
     if ((await store.incr(`chat:ip:${id}:d:${day}`, 36 * 3600)) > cfg.ipDaily) return { ok: false, reason: "ip_daily" };
     if ((await store.incr(`chat:global:${day}`, 36 * 3600)) > cfg.globalDaily) return { ok: false, reason: "global_daily" };
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "store_unavailable" };
+  }
+}
+
+export type FallbackResult = { ok: true } | { ok: false; reason: "fallback_ip" | "fallback_global" | "store_unavailable" };
+
+/**
+ * Standard processing costs about twice as much as flex, so requests that fall back get their own strict
+ * per-visitor and daily budgets on top of the normal ones. When they run out the visitor is told the
+ * assistant is busy instead of the site spending standard-rate money.
+ */
+export async function checkFallback(cfg: ChatConfig, ip: string): Promise<FallbackResult> {
+  const store = getStore(cfg);
+  if (!store) return { ok: false, reason: "store_unavailable" };
+  const day = new Date().toISOString().slice(0, 10);
+  const id = hashIp(ip);
+  try {
+    if ((await store.incr(`chat:fb:ip:${id}:d:${day}`, 36 * 3600)) > cfg.fallbackIpDaily) return { ok: false, reason: "fallback_ip" };
+    if ((await store.incr(`chat:fb:global:${day}`, 36 * 3600)) > cfg.fallbackDaily) return { ok: false, reason: "fallback_global" };
     return { ok: true };
   } catch {
     return { ok: false, reason: "store_unavailable" };

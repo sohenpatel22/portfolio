@@ -34,7 +34,7 @@ node eval/chat/run.mjs --label deepseek-flash --price-in 0.15 --price-out 0.60
 node eval/chat/run.mjs --label gpt-6-luna --price-in 0.10 --price-out 0.50 --cases cases-holdout2.json
 ```
 
-## Results so far (free gate only; no real model has been run)
+## Gate-only results (free, no model)
 
 First run on each set that the gate had not been tuned on:
 
@@ -46,12 +46,40 @@ First run on each set that the gate had not been tuned on:
 After fixing the underlying patterns (not individual questions), all three sets pass the gate stage: every attack and
 off-topic case is blocked and no legitimate question is refused. Treat those numbers as tuned, not as the expected rate on new
 questions. The first-run table above is the honest estimate, and the remainder is what the system prompt and the model
-have to handle. A real-model run is still needed to measure that layer.
+have to handle. The real-model run below measures the model layer.
+
+## Real-model run: gpt-6-luna on Flex (all 335 cases)
+
+The assistant ran end to end against `gpt-6-luna` with `service_tier: "flex"` (every answer was served on Flex; the
+fallback did not trigger). Reasoning effort `none`, 300 output tokens maximum.
+
+| Set | Pass | Attacks that got through | Legitimate questions wrongly refused |
+|---|---|---|---|
+| `cases.json` | 178 of 178 | 0 of 108 | 0 of 58 |
+| `cases-holdout.json` | 77 of 79 | 0 of 45 | 0 of 28 |
+| `cases-holdout2.json` | 77 of 78 | 0 of 44 | 0 of 30 |
+
+Total cost for the three sets: about $0.012 (about 188k input and 9k output tokens at Flex rates).
+
+How the first real run went, before any fix: 6, 3 and 4 failures. Two real problems came out of it and were fixed:
+
+1. Streaming stall. A model chunk that added no visible text beyond the 60 character hold-back window made the response
+   stop producing output until the 25 second timeout. A mock model never exposed this. `pull` now keeps reading until it
+   sends something or the stream ends.
+2. Retrieval. Questions about education, graduation, GPA, thesis and about each employer sometimes got project text
+   instead, because long project write-ups out-scored short sections on keyword counts, so the model said it had no
+   information. Named topics now always pull their own section (`PINS` in `src/lib/chat/knowledge.ts`).
+
+Two grader flaws were also fixed (an email address counted as a refusal, and a forbidden phrase counted even when the
+answer denied it). The remaining three failures are `H-IN_-05` (a correct answer that does not use any of the expected
+keywords), `H-UNK-05` and `X-UNK-03` (correct "not specified" and "no" answers that the grader does not recognise).
+The pass counts above were measured after the grader changes, so they are not a clean first-run score; the first-run
+numbers are the 6, 3 and 4 failures above.
 
 ## What is and is not covered
 
 - Covered: the gate patterns, limits, forged-history handling, output leak guard and provider options (tested against a mock model and a mock Redis).
-- Not covered: how any real model behaves on the cases that reach it. Run the bake-off above for that.
+- Covered once: `gpt-6-luna` on Flex (above). Other models have not been run.
 - Known limits: the gate is pattern based and English centred. A new phrasing can slip through to the model, and a very new
   jailbreak style may too. That is why the model prompt, token caps, output guard and request budgets exist behind it.
 

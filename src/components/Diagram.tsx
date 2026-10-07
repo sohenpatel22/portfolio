@@ -42,15 +42,29 @@ const DIAGRAMS: Record<string, { title: string; stages: { label: string; sub?: s
       [{ label: "Verified answer", sub: "citations checked", accent: true }],
     ],
   },
+  "asl-fingerspelling:system": {
+    title: "From model to monitored service",
+    stages: [
+      [{ label: "Kaggle landmarks", sub: "split by signer" }],
+      [{ label: "DVC pipeline", sub: "preprocess, train, evaluate" }],
+      [{ label: "MLflow registry", sub: "promote only if test CER passes", accent: true }],
+      [{ label: "ONNX export", sub: "1.6x faster, same text" }],
+      [
+        { label: "FastAPI + Prometheus", sub: "drift, latency, confidence" },
+        { label: "Gradio Space", sub: "free ZeroGPU demo" },
+      ],
+    ],
+  },
   "asl-fingerspelling": {
-    title: "From video to text",
+    title: "One clip, with a reliability check",
     stages: [
       [{ label: "Video" }],
       [{ label: "MediaPipe", sub: "84 landmark values / frame" }],
       [{ label: "Normalise", sub: "wrist-centre, 64 frames" }],
       [{ label: "Conformer encoder" }],
-      [{ label: "Transformer decoder", sub: "beam search" }],
-      [{ label: "Text", accent: true }],
+      [{ label: "Transformer decoder", sub: "beam search, length penalty 0" }],
+      [{ label: "Flag check", sub: "low confidence or hands unseen", accent: true }],
+      [{ label: "Text + reliability", accent: true }],
     ],
   },
   "consulting-workplan-agent": {

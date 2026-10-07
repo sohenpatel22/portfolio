@@ -33,7 +33,7 @@ function build() {
   if (cache) return cache;
   const chunks: Chunk[] = [];
 
-  chunks.push(mk("about", "About Sohen", profile.summary, "/#top"));
+  chunks.push(mk("about", "About Sohen", profile.summary, "/"));
 
   for (const e of experience) {
     chunks.push(

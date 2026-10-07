@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { profile } from "@/data/profile";
 
@@ -73,6 +74,36 @@ const ERRORS: Record<number, string> = {
   403: "That request was blocked. Please use the chat on the site itself.",
 };
 
+/**
+ * A link inside the chat. Section links ("/#skills") on the home page are scrolled to directly: letting Next
+ * handle them loses the scroll when the chat panel closes during the same click. Everything else is a normal Link.
+ */
+function ChatLink({ href, onNavigate, className, children }: { href: string; onNavigate: () => void; className?: string; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const sameHome = pathname === "/" && href.startsWith("/#");
+  return (
+    <Link
+      href={href}
+      className={className}
+      onClick={(e) => {
+        onNavigate();
+        if (!sameHome) return;
+        e.preventDefault();
+        const id = href.slice(2);
+        // Give React a moment to remove the panel before scrolling.
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          else window.scrollTo({ top: 0, behavior: "smooth" });
+          history.pushState(null, "", href);
+        }, 60);
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
 /** Turns page paths like /projects/legal-agents or /#experience in a bot answer into links. */
 function Linkified({ text, onNavigate }: { text: string; onNavigate: () => void }) {
   const parts = text.split(/((?<![\w/.:-])\/projects\/[a-z0-9-]+|(?<![\w/.:-])\/#[a-z]+)/g);
@@ -80,9 +111,9 @@ function Linkified({ text, onNavigate }: { text: string; onNavigate: () => void 
     <>
       {parts.map((part, i) =>
         /^\/(projects\/|#)/.test(part) ? (
-          <Link key={i} href={part} onClick={onNavigate} className="font-medium text-accent underline underline-offset-2">
+          <ChatLink key={i} href={part} onNavigate={onNavigate} className="font-medium text-accent underline underline-offset-2">
             {part}
-          </Link>
+          </ChatLink>
         ) : (
           <span key={i}>{part}</span>
         ),
@@ -220,9 +251,9 @@ export function AskChat() {
                         {m.link.label} →
                       </a>
                     ) : (
-                      <Link href={m.link.href} onClick={() => setOpen(false)} className="mt-2 block font-medium text-accent underline underline-offset-2">
+                      <ChatLink href={m.link.href} onNavigate={() => setOpen(false)} className="mt-2 block font-medium text-accent underline underline-offset-2">
                         {m.link.label} →
-                      </Link>
+                      </ChatLink>
                     ))}
                 </div>
               </div>

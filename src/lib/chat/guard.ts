@@ -1,8 +1,6 @@
-/**
- * Deterministic screening that runs BEFORE any model call. Questions that are clearly out of scope,
- * adversarial or abusive get a canned reply and never cost a token. Whatever passes is still
- * constrained by the system prompt, the token caps and the rate limits.
- */
+// Pattern-based screening that runs before any model call. Off-topic, abusive or attack-style
+// questions get a fixed reply and cost nothing. Whatever passes still has the system prompt,
+// the token cap and the rate limits behind it.
 
 export type Verdict =
   | { action: "allow" }
@@ -40,7 +38,7 @@ const REPLIES: Record<GateReason, string> = {
   safety: "I cannot help with that. If you are in distress, please contact local emergency services or a crisis line.",
 };
 
-// Zero-width and line/paragraph separator characters, built from code points so the source stays plain ASCII.
+// Zero-width and separator characters, built from code points so the source stays plain ASCII.
 const INVISIBLE = new RegExp(
   "[" + [[0x200b, 0x200f], [0x2028, 0x202f], [0x2060, 0x2060], [0xfeff, 0xfeff]].map(([a, b]) => String.fromCharCode(a) + "-" + String.fromCharCode(b)).join("") + "]",
   "g",
@@ -52,7 +50,7 @@ export function normalize(s: string): string {
 
 const reply = (reason: GateReason): Verdict => ({ action: "reply", reason, text: REPLIES[reason] });
 
-// ------------------------------------------------------------ patterns
+// Patterns
 const SPECIAL_TOKENS =
   /<\|?\s*(system|im_start|im_end|endoftext|assistant|user)\s*\|?>|\[\/?inst\]|<<\/?sys>>|^#{1,3}\s*(system|instruction)s?\b|```\s*system/;
 
@@ -89,8 +87,8 @@ const INJECTION: RegExp[] = [
   /\bunrestricted\b|\bversion of you\b|\bevil (version|twin)\b|\bopposite day\b|\bgrandmother\b.{0,40}\b(read|prompts?|instructions?)\b/,
 ];
 
-// Probing for keys or the way this site is built. Questions about a PROJECT's own keys, models or databases are fine.
-// Bare "repeat that" or "say it again" with no topic: the earlier turn is unrelated or forged, so do not spend a model call.
+// Probing for keys or how this site is built. Questions about a project's own models or databases are fine.
+// "Repeat that" with no topic: the earlier turn is unrelated or forged, so skip the model call.
 const REPEAT_ONLY = /^(yes|yeah|ok|okay|sure|please|now)?[, ]*(repeat|say|print|show|send|give)( me)?( that| it| this| the (key|token|secret|code|password))( key| token| secret| code| password)?( again| once more)?[!. ]*$/;
 
 const SECRETS = new RegExp(
@@ -136,7 +134,7 @@ const COST_ABUSE =
 const GREETING =
   /^(hi|hello|hey|hiya|yo|sup|howdy|greetings|good (morning|afternoon|evening)|thanks|thank you|thx|ty|ok|okay|cool|great|nice|awesome|bye|goodbye|see you)( there| sohen| bot| assistant)?[!. ?]*$/;
 
-/** Words that make a question plainly about Sohen, his work, or this portfolio. */
+/** Words that make a question clearly about Sohen or this site. */
 const DOMAIN =
   /\b(sohen|patel|portfolio|background|experience|experiences|projects?|skills?|education|degree|gpa|resume|cv|contact|linkedin|github|hire|hiring|hired|internship|intern|employers?|employment|career|university|meng|bachelor|thesis|scholarship|awards?|patents?|publications?|volunteer|volunteering|volunteered|mentorship|recognition|certifications?|coursework|courses|tech stack|technical skills|accomplishments?|achievements?|email|teaching assistant|expertise|gate|gold (standard |data)?set|gold dataset|prosecution|defense agent|judge agent|chain[- ]of[- ]thought|gold[- ]standard|golden set)\b/;
 
@@ -153,7 +151,7 @@ const PERSON_ACTION = new RegExp(
   String.raw`\b${STRONG}\b.{0,40}\b${ACTION}\b|\b${ACTION}\b.{0,25}\b${STRONG}\b|\b${SECOND}\b.{0,40}\b${SECOND_ACTION}\b|\b${SECOND_ACTION}\b.{0,25}\b${SECOND}\b`,
 );
 
-/** Names that only exist on this portfolio. Mentioning one makes a question in scope on its own. */
+/** Names that only exist on this site. One of these is enough to be in scope. */
 const NAMES = [
   "ontario health", "deloitte", "arcelormittal", "am/ns", "amns", "isro", "hpair", "reach for the stars", "aga khan",
   "university of toronto", "uoft", "u of t", "gujarat", "market research", "legal agent", "legal ai", "workplan",
@@ -162,7 +160,7 @@ const NAMES = [
   "your portfolio", "your projects", "your resume", "your work", "your experience", "your skills",
 ];
 
-/** Technology words. They count as in scope only together with a cue that the question is about Sohen. */
+/** Technology words. In scope only when the question is also about Sohen. */
 const TECH = [
   "copilot studio", "langgraph", "langfuse", "ragas", "deepeval", "dspy", "qdrant", "pgvector", "mlflow", "python", "pytorch",
   "docker", "fastapi", "langchain", "tensorflow", "scikit", "pandas", "sql", "aws", "llm", "mcp", "conformer", "lambdarank",
@@ -172,13 +170,13 @@ const TECH = [
 
 const STRONG_RE = /\b(sohen|patel|he|him|his|himself|candidate|applicant)\b/;
 
-// Frames that ask for general knowledge or comparisons rather than facts about Sohen.
+// General-knowledge or comparison questions rather than questions about Sohen.
 const GENERIC_FRAME =
   /\b(difference between|compare|comparison|versus|vs\.?|better than|best|top \d+|which is better|pros and cons|what is (a|an)|benefits of|how does .{1,30} work|under the hood)\b/;
 
 export type Screened = { verdict: Verdict; normalized: string };
 
-/** Screens one user message. Pure and fast; safe to call on every turn the model would see. */
+/** Screens one user message. */
 export function screen(raw: string, siteTerm = false): Screened {
   const t = normalize(raw);
   const out = (v: Verdict): Screened => ({ verdict: v, normalized: t });
@@ -201,18 +199,18 @@ export function screen(raw: string, siteTerm = false): Screened {
   const tech = TECH.some((e) => t.includes(e)) && (domain || STRONG_RE.test(t));
   const task = TASK_VERB.test(t) && TASK_OBJECT.test(t);
 
-  // "Write me a python script", "help me with my essay": a general task, not a question about Sohen.
+  // "Write me a script", "help with my essay": a general task.
   if (task && !/\b(sohen|he|his|him)\b/.test(t) && !(name && !/\b(python|code|script|sql)\b/.test(t))) {
     return out(reply("off_topic"));
   }
-  // "my resume", "my team": the visitor is talking about themselves, not about Sohen.
+  // "my resume", "my team": the visitor is talking about themselves.
   if (/\b(my|our|mine)\b/.test(t) && !STRONG_RE.test(t) && !name) return out(reply("off_topic"));
   if (!name && !domain && !tech && !(siteTerm && !TASK_VERB.test(t) && !GENERIC_FRAME.test(t))) return out(reply("off_topic"));
   return out({ action: "allow" });
 }
 
-// ------------------------------------------------------------ output side
-/** Per-deployment marker placed in the system prompt. If it ever appears in output, the prompt is leaking. */
+// Output side
+/** Marker hidden in the system prompt. If it shows up in an answer, the prompt is leaking. */
 export function canary(): string {
   const salt = process.env.CHAT_HASH_SALT ?? "portfolio";
   let h = 5381;

@@ -1,12 +1,9 @@
 import { createHash } from "node:crypto";
 
-/**
- * Cost and abuse controls for the AI assistant.
- *
- * Every request is bounded (short input, capped output, small retrieved context), so a request
- * count is a reliable proxy for spend. Counters live in Redis (Upstash REST) so they are shared
- * across serverless instances. In production the assistant FAILS CLOSED if Redis is unavailable.
- */
+// Spend and abuse limits for the chat assistant.
+// Every request is small and capped, so counting requests is a good stand-in for counting cost.
+// Counters live in Redis (Upstash) so all serverless instances share them. In production the
+// assistant stops answering if Redis is down, rather than running without limits.
 
 export type ChatConfig = {
   enabled: boolean;
@@ -22,13 +19,13 @@ export type ChatConfig = {
   omitTemperature: boolean;
   extraBody: Record<string, unknown>;
   evalDryRun: boolean;
-  /** "flex" sends service_tier=flex (cheaper, slower, can be unavailable); "standard" is normal processing. */
+  /** "flex" is OpenAI flex processing (cheaper, slower, sometimes unavailable). */
   tier: "flex" | "standard";
-  /** In flex mode, retry on standard processing when flex is slow or unavailable. */
+  /** Retry once on standard processing when flex is slow or unavailable. */
   fallback: boolean;
-  /** How long to wait for the first bytes from flex before falling back. */
+  /** How long to wait for flex to start answering before falling back. */
   flexFirstByteMs: number;
-  /** Strict budgets that apply only to requests served by the (twice as expensive) fallback. */
+  /** Separate, smaller budgets for answers that used the fallback. */
   fallbackIpDaily: number;
   fallbackDaily: number;
 };
@@ -51,7 +48,7 @@ function parseJson(v: string | undefined): Record<string, unknown> {
 export function getConfig(): ChatConfig {
   const apiKey = process.env.LLM_API_KEY ?? "";
   const tier = process.env.LLM_SERVICE_TIER === "flex" ? "flex" : "standard";
-  // Flex costs about half as much, so it earns larger budgets. Without it the strict budgets apply.
+  // Flex costs about half as much, so it gets bigger budgets.
   const d = tier === "flex" ? { hourly: 10, daily: 10, global: 100 } : { hourly: 5, daily: 5, global: 30 };
   return {
     enabled: apiKey.length > 0 && process.env.CHAT_ENABLED !== "false",
@@ -66,7 +63,7 @@ export function getConfig(): ChatConfig {
     tokenParam: process.env.LLM_TOKEN_PARAM === "max_completion_tokens" ? "max_completion_tokens" : "max_tokens",
     omitTemperature: process.env.LLM_OMIT_TEMPERATURE === "true",
     extraBody: parseJson(process.env.LLM_EXTRA_BODY),
-    // Local evaluation only: stop after the gates and limits instead of calling the model.
+    // For the eval runner: stop before the model call.
     evalDryRun: process.env.CHAT_EVAL_DRY_RUN === "true",
     tier,
     fallback: tier === "flex" && process.env.LLM_FLEX_FALLBACK !== "false",
@@ -76,7 +73,7 @@ export function getConfig(): ChatConfig {
   };
 }
 
-// ---------------------------------------------------------------- store
+// Counter store
 type Store = { incr(key: string, ttlSeconds: number): Promise<number> };
 
 const mem = new Map<string, { n: number; exp: number }>();
@@ -115,7 +112,7 @@ function upstashStore(url: string, token: string): Store {
   };
 }
 
-/** True when requests can be counted, so the assistant can safely be offered. */
+/** True when requests can be counted. */
 export function isStoreConfigured(cfg: ChatConfig): boolean {
   return getStore(cfg) !== null;
 }
@@ -127,7 +124,7 @@ function getStore(cfg: ChatConfig): Store | null {
   return cfg.allowMemoryStore ? memoryStore : null;
 }
 
-// ---------------------------------------------------------------- limiter
+// Limits
 export type LimitResult =
   | { ok: true }
   | { ok: false; reason: "ip_hourly" | "ip_daily" | "global_daily" | "store_unavailable" };
@@ -147,7 +144,7 @@ export async function checkLimits(cfg: ChatConfig, ip: string): Promise<LimitRes
   const hour = d.toISOString().slice(0, 13);
   const id = hashIp(ip);
   try {
-    // Per-visitor limits first, so one visitor cannot spend the global budget past their own cap.
+    // Per-visitor first, so one visitor can't use up the global budget.
     if ((await store.incr(`chat:ip:${id}:h:${hour}`, 2 * 3600)) > cfg.ipHourly) return { ok: false, reason: "ip_hourly" };
     if ((await store.incr(`chat:ip:${id}:d:${day}`, 36 * 3600)) > cfg.ipDaily) return { ok: false, reason: "ip_daily" };
     if ((await store.incr(`chat:global:${day}`, 36 * 3600)) > cfg.globalDaily) return { ok: false, reason: "global_daily" };
@@ -159,11 +156,8 @@ export async function checkLimits(cfg: ChatConfig, ip: string): Promise<LimitRes
 
 export type FallbackResult = { ok: true } | { ok: false; reason: "fallback_ip" | "fallback_global" | "store_unavailable" };
 
-/**
- * Standard processing costs about twice as much as flex, so requests that fall back get their own strict
- * per-visitor and daily budgets on top of the normal ones. When they run out the visitor is told the
- * assistant is busy instead of the site spending standard-rate money.
- */
+// Standard processing costs about twice as much as flex, so fallback answers have their own
+// small budgets. When those run out the visitor sees a "busy" message.
 export async function checkFallback(cfg: ChatConfig, ip: string): Promise<FallbackResult> {
   const store = getStore(cfg);
   if (!store) return { ok: false, reason: "store_unavailable" };
@@ -184,7 +178,7 @@ export function clientIp(req: Request): string {
   return first || req.headers.get("x-real-ip") || "unknown";
 }
 
-/** Same-origin check: a browser on another site cannot drive this endpoint through a visitor. */
+/** Rejects requests that come from another site. */
 export function sameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");

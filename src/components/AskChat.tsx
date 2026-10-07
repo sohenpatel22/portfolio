@@ -79,10 +79,8 @@ const ERRORS: Record<number, string> = {
   403: "That request was blocked. Please use the chat on the site itself.",
 };
 
-/**
- * A link inside the chat. Section links ("/#skills") on the home page are scrolled to directly: letting Next
- * handle them loses the scroll when the chat panel closes during the same click. Everything else is a normal Link.
- */
+// Section links ("/#skills") on the home page are scrolled to by hand, because Next loses the
+// scroll when the chat panel closes during the same click. Other links are normal.
 function ChatLink({ href, onNavigate, className, children }: { href: string; onNavigate: () => void; className?: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const sameHome = pathname === "/" && href.startsWith("/#");
@@ -95,7 +93,7 @@ function ChatLink({ href, onNavigate, className, children }: { href: string; onN
         if (!sameHome) return;
         e.preventDefault();
         const id = href.slice(2);
-        // Give React a moment to remove the panel before scrolling.
+        // Let the panel close first.
         setTimeout(() => {
           const el = document.getElementById(id);
           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -109,7 +107,7 @@ function ChatLink({ href, onNavigate, className, children }: { href: string; onN
   );
 }
 
-/** Turns page paths like /projects/legal-agents or /#experience in a bot answer into links. */
+/** Turns paths like /projects/legal-agents or /#experience in an answer into links. */
 function Linkified({ text, onNavigate }: { text: string; onNavigate: () => void }) {
   const parts = text.split(/((?<![\w/.:-])\/projects\/[a-z0-9-]+|(?<![\w/.:-])\/#[a-z]+)/g);
   return (
@@ -149,7 +147,7 @@ export function AskChat() {
     return () => removeEventListener("keydown", onKey);
   }, []);
 
-  // Ask the server once whether the AI text box should be offered. This call is free: no LLM, no database.
+  // Ask once whether to show the text box. This call is free.
   useEffect(() => {
     if (!open || checked.current) return;
     checked.current = true;
@@ -175,7 +173,7 @@ export function AskChat() {
     const q = input.trim();
     if (!q || typing || q.length > MAX_Q) return;
     setInput("");
-    // A typed question that is exactly a preset gets the stored answer: no model call, no cost.
+    // A typed question that matches a preset gets the stored answer, with no model call.
     const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
     const preset = QAS.find((x) => norm(x.q) === norm(q));
     if (preset) return ask(preset);

@@ -8,7 +8,7 @@ export const maxDuration = 30;
 const MAX_QUESTION = 280;
 const MAX_TURNS = 5;
 const MAX_TURN_CHARS = 600;
-const HOLD_BACK = 60; // chars withheld from the stream so a leaked phrase can be cut before it is sent
+const HOLD_BACK = 60; // characters held back so a leaked phrase can be cut before it is sent
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -26,7 +26,7 @@ const text = (body: string, headers: Record<string, string> = {}) =>
     },
   });
 
-/** Lets the UI decide whether to show the text box. Touches neither Redis nor the LLM. */
+/** Tells the page whether to show the text box. Does not touch Redis or the model. */
 export async function GET() {
   const cfg = getConfig();
   return json({ enabled: cfg.enabled && isStoreConfigured(cfg) }, 200);
@@ -64,7 +64,7 @@ class UpstreamError extends Error {
   constructor(public status: number) {
     super(`upstream ${status}`);
   }
-  /** Worth retrying on standard processing: timeouts, capacity (429) and server errors. */
+  /** Timeouts, 429s and server errors are worth retrying on standard processing. */
   get retryable() {
     return this.status === 0 || this.status === 408 || this.status === 429 || this.status >= 500;
   }
@@ -72,13 +72,12 @@ class UpstreamError extends Error {
 
 type Opened = { reader: ReadableStreamDefaultReader<Uint8Array>; first: Uint8Array | null; done: () => void };
 
-/** Opens a streaming completion. With firstByteMs set, gives up (and aborts) if nothing arrives in time. */
+/** Starts a streaming request. With firstByteMs set, gives up if nothing arrives in time. */
 async function openStream(cfg: ChatConfig, payload: Record<string, unknown>, firstByteMs: number | null): Promise<Opened> {
   const ac = new AbortController();
   const total = setTimeout(() => ac.abort(), 25_000);
   const done = () => clearTimeout(total);
-  // The first-byte deadline covers the whole wait (headers and first chunk): a queued flex request can
-  // hold back its headers as well as its body.
+  // The deadline covers headers and the first chunk, because a queued flex request can delay both.
   let timedOut = false;
   const deadline = firstByteMs
     ? setTimeout(() => {
@@ -126,13 +125,12 @@ export async function POST(req: Request) {
   const messages = parse(body);
   if (!messages) return json({ error: "bad_request" }, 400);
 
-  // Client-supplied assistant messages are untrusted (a visitor can forge them to prime the model),
-  // so only the user's own questions are used.
+  // Assistant messages from the browser can be forged, so only the user's questions are used.
   const questions = messages.filter((m) => m.role === "user").map((m) => m.content);
   const current = questions[questions.length - 1];
   const previous = questions.length > 1 ? questions[questions.length - 2] : null;
 
-  // 1. Free, deterministic gate. Nothing below this line runs for refused questions.
+  // 1. Free gate. Refused questions stop here.
   const prevScreen = previous ? gate(previous) : null;
   if (prevScreen && prevScreen.verdict.action === "reply" && HARD.includes(prevScreen.verdict.reason)) {
     return text(prevScreen.verdict.text, { "X-Chat-Gate": prevScreen.verdict.reason });
@@ -146,7 +144,7 @@ export async function POST(req: Request) {
     if (!followUp) return text(v.text, { "X-Chat-Gate": v.reason });
   }
 
-  // 2. Per-visitor and global budgets (only for questions that would cost money).
+  // 2. Budgets. Only questions that would cost money count.
   const limit = await checkLimits(cfg, clientIp(req));
   if (!limit.ok) {
     if (limit.reason === "store_unavailable") return json({ error: "unavailable" }, 503);
@@ -175,8 +173,7 @@ export async function POST(req: Request) {
   };
   if (!cfg.omitTemperature) base.temperature = 0.2;
 
-  // 3. Call the model. In flex mode try flex first; on a slow or unavailable flex, fall back to standard
-  // processing, but only while the (stricter) fallback budgets last.
+  // 3. Call the model. Try flex first, and fall back to standard while the fallback budget lasts.
   let opened: Opened;
   let tier: "flex" | "standard" | "fallback" = cfg.tier;
   try {
@@ -212,8 +209,8 @@ export async function POST(req: Request) {
     async pull(controller) {
       if (stopped) return;
       try {
-        // Keep reading until something is sent or the stream ends: a chunk that adds no text beyond the
-        // hold-back window sends nothing, and a pull that sends nothing is never called again.
+        // Keep reading until something is sent or the stream ends. A pull that sends nothing
+        // is never called again, which stalls the response.
         for (;;) {
           const before = emitted;
           const chunk = pending ? { done: false, value: pending } : await reader.read();

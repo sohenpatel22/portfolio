@@ -6,6 +6,7 @@ export const profile = {
     "I build and evaluate LLM, agentic and applied ML systems, and I measure whether they actually work.",
   location: "Toronto, ON, Canada",
   email: "sohenpatel.work@gmail.com",
+  universityEmail: "sohen.patel@mail.utoronto.ca",
   linkedin: "https://www.linkedin.com/in/sohen-patel",
   github: "https://github.com/sohenpatel22",
   resume: "/Sohen_Patel_Resume.pdf",

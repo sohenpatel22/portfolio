@@ -119,7 +119,7 @@ function build() {
 
   const core = [
     `Name: ${profile.name}. Role: ${profile.role}. Location: ${profile.location}.`,
-    `Contact: email ${profile.email}; LinkedIn ${profile.linkedin}; GitHub ${profile.github}; resume PDF at ${profile.resume}.`,
+    `Contact: email ${profile.email}; University of Toronto email ${profile.universityEmail}; LinkedIn ${profile.linkedin}; GitHub ${profile.github}; resume PDF at ${profile.resume}.`,
     `Site pages: /#experience, /#projects, /#skills, /#education, /#extracurricular, /#contact. Project pages are at /projects/<name>.`,
     `Projects: ${projects.map((p) => `${p.title} (/projects/${p.slug})`).join("; ")}.`,
   ].join("\n");

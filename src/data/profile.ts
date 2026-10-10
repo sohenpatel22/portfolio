@@ -7,6 +7,7 @@ export const profile = {
   location: "Toronto, ON, Canada",
   email: "sohenpatel.work@gmail.com",
   universityEmail: "sohen.patel@mail.utoronto.ca",
+  phone: "+1 416-666-8954",
   linkedin: "https://www.linkedin.com/in/sohen-patel",
   github: "https://github.com/sohenpatel22",
   resume: "/Sohen_Patel_Resume.pdf",

@@ -8,8 +8,8 @@ type QA = { q: string; a: string; link?: { label: string; href: string; external
 
 const QAS: QA[] = [
   {
-    q: "What roles are you looking for?",
-    a: "Full-time AI / ML engineer roles where I build and evaluate LLM, agentic and applied ML systems. I am strongest where the work needs both engineering and rigorous measurement.",
+    q: "How can I contact you?",
+    a: `You can email me at ${profile.email} or at my University of Toronto address, ${profile.universityEmail}. I am also on LinkedIn and GitHub, linked in the contact section.`,
     link: { label: "Email me", href: `mailto:${profile.email}`, external: true },
   },
   {

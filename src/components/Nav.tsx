@@ -42,14 +42,17 @@ export function Nav() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <button
             onClick={() => window.dispatchEvent(new Event("open-palette"))}
-            className="hidden rounded-md border border-line px-2.5 py-1 font-mono text-xs text-muted hover:text-ink sm:block"
-            aria-label="Ctrl K, open command palette"
+            className="rounded-md border border-line p-2 text-muted hover:border-accent hover:text-ink"
+            aria-label="Open menu"
+            title="Menu (Ctrl K)"
           >
-            Ctrl K
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M3 5h12M3 9h12M3 13h12" />
+            </svg>
           </button>
-          <ThemeToggle />
         </div>
       </div>
     </header>

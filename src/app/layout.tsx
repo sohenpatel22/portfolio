@@ -33,15 +33,19 @@ export const metadata: Metadata = {
 const themeScript = `try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 
 const commands: Cmd[] = [
-  { label: "Projects", hint: "section", href: "/#projects" },
-  { label: "Experience", hint: "section", href: "/#experience" },
-  { label: "Skills", hint: "section", href: "/#skills" },
-  { label: "Contact", hint: "section", href: "/#contact" },
-  ...visibleProjects.map((p) => ({ label: p.title, hint: "project", href: `/projects/${p.slug}` })),
-  { label: "Download resume", hint: "pdf", href: profile.resume, external: true },
-  { label: "GitHub", hint: "external", href: profile.github, external: true },
-  { label: "LinkedIn", hint: "external", href: profile.linkedin, external: true },
-  { label: "Email me", hint: "mailto", href: `mailto:${profile.email}`, external: true },
+  { label: "Home", hint: "top of the page", href: "/", group: "Sections" },
+  { label: "Experience", hint: "where I have worked", href: "/#experience", group: "Sections" },
+  { label: "Projects", hint: "selected work", href: "/#projects", group: "Sections" },
+  { label: "Skills", hint: "toolbox", href: "/#skills", group: "Sections" },
+  { label: "Education", hint: "background", href: "/#education", group: "Sections" },
+  { label: "Beyond work", hint: "recognition and volunteering", href: "/#extracurricular", group: "Sections" },
+  { label: "Contact", hint: "email, phone, links", href: "/#contact", group: "Sections" },
+  ...visibleProjects.map((p) => ({ label: p.title, hint: p.tier === "major" ? "case study" : "project", href: `/projects/${p.slug}`, group: "Projects" })),
+  { label: "Download resume", hint: "PDF", href: profile.resume, group: "Links", external: true },
+  { label: "GitHub", hint: "opens in a new tab", href: profile.github, group: "Links", external: true },
+  { label: "LinkedIn", hint: "opens in a new tab", href: profile.linkedin, group: "Links", external: true },
+  { label: "Email", hint: profile.email, href: `mailto:${profile.email}`, group: "Links", external: true },
+  { label: "University email", hint: profile.universityEmail, href: `mailto:${profile.universityEmail}`, group: "Links", external: true },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

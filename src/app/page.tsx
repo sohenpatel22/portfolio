@@ -219,10 +219,10 @@ export default function Home() {
       </Section>
 
       <Section id="contact" eyebrow="Contact" title="Let us talk">
-        <p className="max-w-xl text-muted">I am looking for full-time AI / ML engineer roles. The fastest way to reach me is email.</p>
+        <p className="max-w-xl text-muted">The fastest way to reach me is email.</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <a href={`mailto:${profile.email}`} className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg">{profile.email}</a>
-          <a href={`mailto:${profile.universityEmail}`} className="rounded-md border border-line px-4 py-2 text-sm hover:border-accent">{profile.universityEmail}</a>
+          <a href={`mailto:${profile.universityEmail}`} className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg">{profile.universityEmail}</a>
           <a href={profile.linkedin} target="_blank" rel="noopener" className="rounded-md border border-line px-4 py-2 text-sm hover:border-accent">LinkedIn</a>
           <a href={profile.github} target="_blank" rel="noopener" className="rounded-md border border-line px-4 py-2 text-sm hover:border-accent">GitHub</a>
         </div>

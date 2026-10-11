@@ -12,7 +12,7 @@ export const legalAgents: Project = {
   metric: { value: "0.72", label: "judge AUC on 398 appeals from the lower decision alone (95% CI 0.66 to 0.77)" },
   tags: ["LLM / Agents", "RAG", "Evaluation", "MLOps"],
   stack: [
-    "Python", "Claude", "LangChain", "Qdrant", "BM25 + RRF", "Kanon 2", "FastAPI", "Next.js", "Langfuse", "DSPy", "scikit-learn", "pytest",
+    "Python", "Claude API", "LangChain", "Qdrant", "BM25 + RRF", "Kanon 2", "FastAPI", "Next.js", "Langfuse", "DSPy", "scikit-learn", "pytest",
   ],
   facts: [
     { k: "398", v: "Tier B cases, 61 successes, FCA decisions 2023 to 2026" },
@@ -28,7 +28,7 @@ export const legalAgents: Project = {
       items: [
         "An appellant (or moving-party) agent and a respondent agent argue a Federal Court of Appeal proceeding, and a judge agent returns whether the moving party succeeds, with a confidence score. It is a research prototype, not a legal decision tool.",
         "The final design ('Tier B') gives the model only the lower-court or tribunal decision. Outcomes, grounds and the authorities the FCA cites come from the FCA judgment and are used for scoring only. The proceeding type and moving party come from the case caption, which is known before the decision.",
-        "Variants are switchable: a judge alone (v0), a judge with retrieved precedents (v1), and a grounds agent plus advocate briefs before the judge (v2). Retrieval is hybrid (BM25 and dense search fused with reciprocal rank fusion) with a Kanon 2 reranker, over a library of 4,887 FCA decisions (50,749 chunks), later widened with 815 Supreme Court decisions.",
+        "Variants are switchable: a judge alone (v0), a judge with retrieved precedents (v1), and a grounds agent plus advocate briefs before the judge (v2). Retrieval is hybrid (BM25 and dense search fused with reciprocal rank fusion) with a Kanon 2 reranker, over a library that grew from 4,887 FCA decisions (50,749 chunks) to about 5.7K decisions with 815 Supreme Court decisions added.",
       ],
     },
     {

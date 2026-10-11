@@ -19,7 +19,7 @@ const QAS: QA[] = [
   },
   {
     q: "Tell me about the legal AI project",
-    a: "A multi-agent system where Prosecution and Defense agents argue Federal Court of Appeal cases and a Judge predicts the outcome. It scored 88.9% on 27 post-cutoff cases against a 77.8% majority baseline, and the debate matched a single judge at about six times the cost. There is a replay demo on the page.",
+    a: "A multi-agent system that predicts Federal Court of Appeal outcomes. The main work was the evaluation: I found that 38% of the inherited benchmark packets described a different case, rebuilt it from open court data, and moved to a design where the model sees only the lower-court decision. On 398 such cases a single judge ranks outcomes with AUC 0.72 (95% CI 0.66 to 0.77), and adding it to case metadata lifts AUC from 0.68 to 0.76. A multi-agent debate cost about six times a single judge without changing verdicts, and I report that.",
     link: { label: "Open the case study", href: "/projects/legal-agents" },
   },
   {
@@ -58,7 +58,7 @@ const QAS: QA[] = [
   },
   {
     q: "Where did you study?",
-    a: "University of Toronto (MEng in Data Analytics and Machine Learning, GPA 3.81/4.0, expected Jan 2027), after a B.E. in Mechanical Engineering from Gujarat Technological University. I am also a teaching assistant for two U of T courses.",
+    a: "University of Toronto (MEng in Data Analytics and Machine Learning, GPA 3.81/4.0, expected Dec 2026), after a B.E. in Mechanical Engineering from Gujarat Technological University. I am also a teaching assistant for two U of T courses.",
     link: { label: "See education", href: "/#education" },
   },
   {

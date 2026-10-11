@@ -20,7 +20,7 @@ export const marketResearchAgent: Project = {
   ],
   repo: GH,
   facts: [
-    { k: "244", v: "commits over six weeks, built solo" },
+    { k: "253", v: "commits over seven weeks, built solo" },
     { k: "130", v: "automated tests plus a paid quality gate in CI" },
     { k: "99", v: "golden questions in 8 categories" },
     { k: "5.4k", v: "filing chunks in one Postgres database" },
@@ -295,7 +295,7 @@ export const marketResearchAgent: Project = {
         "A grader that can say 'this answer isn't supported' is worth more than a clever generator: surfacing the quality flag to the user changed how the product behaves, not just how it scores.",
         "Measure before believing. Hybrid retrieval trailed dense-only until the reranker, and the LSTM beats the baseline overall but not for every ticker.",
         "Noisy LLM-judge metrics need calibrated thresholds with the reason written down, and cheap deterministic checks catch what judges miss.",
-        "Next: enlarge the golden set with a second labeller and multi-turn questions, run the provider comparison on the full set for OpenAI and Anthropic, add distribution-level drift monitoring and more tickers, and publish a hosted demo with authentication.",
+        "Next: enlarge the golden set with a second labeller and multi-turn questions, repeat the provider comparison with several runs per model to put error bars on the small gaps, add distribution-level drift monitoring and more tickers, and publish a hosted demo with authentication.",
       ],
     },
   ],

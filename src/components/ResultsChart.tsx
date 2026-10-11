@@ -1,6 +1,6 @@
-type Row = { label: string; n: number; accuracy: number; baseline: number; cost: number };
+type Row = { label: string; n: number; accuracy: number; baseline: number; cost?: number };
 
-/** Horizontal bars: accuracy vs the majority/chance baseline, with n and cost per run. */
+/** Horizontal bars: accuracy against the always-predict-majority baseline, with n and cost where known. */
 export function ResultsChart({ rows }: { rows: Row[] }) {
   return (
     <figure className="card p-5">
@@ -13,7 +13,7 @@ export function ResultsChart({ rows }: { rows: Row[] }) {
             <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
               <span>{r.label}</span>
               <span className="font-mono text-xs text-muted">
-                n={r.n} · ${r.cost.toFixed(2)}
+                n={r.n}{r.cost !== undefined && ` · $${r.cost.toFixed(2)}`}
               </span>
             </div>
             <div

@@ -124,11 +124,11 @@ export default async function ProjectPage({ params }: Props) {
 
       {isLegal && (
         <>
-          <h2 className="mt-12 font-serif text-2xl font-semibold">Results, with the caveats</h2>
+          <h2 className="mt-12 font-serif text-2xl font-semibold">Accuracy against the baseline</h2>
           <p className="mt-3 text-muted">
-            The headline number comes from 27 Federal Court of Appeal decisions dated after the model&apos;s knowledge cutoff, so memorisation cannot explain it.
-            The sample is small (95% CI roughly 72 to 96%), the model is a single one, and on this set the multi-agent debate matched a single judge at about six times the cost.
-            Earlier perfect scores on rebuilt packets are not reported here because they may reflect leakage.
+            On packets rebuilt from the judgments, the model clears the always-predict-majority baseline. On the final design, where it sees only the lower decision,
+            it does not at a 0.5 cut-off, because only about 15% of moving parties succeed. That is why the headline number above is AUC, which measures ranking.
+            Higher scores from earlier runs on contaminated packets are not shown.
           </p>
           <div className="mt-5"><ResultsChart rows={legalResults} /></div>
           <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -139,7 +139,8 @@ export default async function ProjectPage({ params }: Props) {
               </div>
             ))}
           </dl>
-          <h2 className="mt-12 mb-4 font-serif text-2xl font-semibold">Watch it argue a case</h2>
+          <h2 className="mt-12 font-serif text-2xl font-semibold">Watch it argue a case</h2>
+          <p className="mt-2 mb-4 text-sm text-muted">An excerpt from a run on the earlier benchmark, shortened and with party names removed.</p>
           <TrialReplay turns={replay} />
           <p className="mt-10 rounded-md border border-line p-4 text-sm text-muted">
             MEng research project at the University of Toronto, built on a prototype started by an earlier team and extended by me into a benchmarked system. It is not a legal decision system, not legal advice, and not a sealed evaluation.

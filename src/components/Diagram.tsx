@@ -1,15 +1,18 @@
 const DIAGRAMS: Record<string, { title: string; stages: { label: string; sub?: string; accent?: boolean }[][] }> = {
   "legal-agents": {
-    title: "One trial, end to end",
+    title: "One case, from the lower decision",
     stages: [
-      [{ label: "Case packet", sub: "facts + relief" }],
-      [{ label: "Hybrid retrieval", sub: "BM25 + Qdrant, RRF" }],
+      [{ label: "Lower decision", sub: "the only input; no FCA text" }],
       [
-        { label: "Prosecution agent", sub: "argues for moving party" },
-        { label: "Defense agent", sub: "argues for responding party" },
+        { label: "Grounds agent", sub: "lists the grounds of appeal" },
+        { label: "Hybrid retrieval", sub: "BM25 + dense, RRF, rerank" },
       ],
-      [{ label: "Judge agent", sub: "weighs both sides", accent: true }],
-      [{ label: "Verdict + confidence", sub: "scored vs baseline", accent: true }],
+      [
+        { label: "Appellant brief", sub: "moving party" },
+        { label: "Respondent brief", sub: "sees the appellant's" },
+      ],
+      [{ label: "Judge agent", sub: "score for the moving party", accent: true }],
+      [{ label: "Ranked and scored", sub: "AUC against baselines", accent: true }],
     ],
   },
   "market-research-agent:system": {

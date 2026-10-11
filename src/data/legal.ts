@@ -1,16 +1,17 @@
-// Numbers taken from the project's own run reports (artifacts/runs/*/summary.json, report.md).
+// Figures come from the project's run reports and decision record.
 export const legalResults = [
-  { label: "Post-cutoff · debate", n: 27, accuracy: 88.9, baseline: 77.8, cost: 4.22 },
-  { label: "Post-cutoff · single judge", n: 27, accuracy: 88.9, baseline: 77.8, cost: 0.74 },
-  { label: "Dev 68 · predictive prompt", n: 68, accuracy: 73.5, baseline: 50.0, cost: 17.28 },
-  { label: "Dev 28 · baseline prompt", n: 28, accuracy: 50.0, baseline: 50.0, cost: 7.35 },
+  { label: "Reconstructed packets, post-cutoff, debate", n: 27, accuracy: 88.9, baseline: 77.8, cost: 4.22 },
+  { label: "Reconstructed packets, post-cutoff, single judge", n: 27, accuracy: 88.9, baseline: 77.8, cost: 0.74 },
+  { label: "Lower decision only (Tier B), pack 1", n: 118, accuracy: 83.9, baseline: 83.1 },
+  { label: "Lower decision only (Tier B), pack 2", n: 280, accuracy: 85.4, baseline: 85.4 },
+  { label: "Lower decision only (Tier B), pooled", n: 398, accuracy: 84.9, baseline: 84.7 },
 ];
 
 export const legalFacts = [
-  { k: "44", v: "judgments in the precedent library (7,170 chunks)" },
-  { k: "3", v: "versioned benchmark packs: 209, 198 and 27 cases" },
-  { k: "169", v: "Python tests plus UI tests, run in CI" },
-  { k: "$0.74", v: "for a 27-case single-judge run vs $4.22 with debate" },
+  { k: "398", v: "cases the judge ranks from the lower decision alone" },
+  { k: "0.72", v: "AUC, 95% CI 0.66 to 0.77" },
+  { k: "38%", v: "of inherited dev packets described a different case" },
+  { k: "198", v: "automated tests, run in CI" },
 ];
 
 export type ReplayTurn = { role: "prosecution" | "defense" | "judge"; title: string; text: string };

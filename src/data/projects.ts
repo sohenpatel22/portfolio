@@ -1,5 +1,6 @@
 import { marketResearchAgent } from "./market-agent";
 import { aslFingerspelling } from "./asl";
+import { legalAgents } from "./legal-project";
 
 export type Table = { caption?: string; columns: string[]; rows: string[][] };
 
@@ -34,49 +35,7 @@ export type Project = {
 };
 
 export const projects: Project[] = [
-  {
-    slug: "legal-agents",
-    tier: "major",
-    title: "Multi-Agent Legal Reasoning System",
-    kicker: "MEng research project · University of Toronto",
-    summary:
-      "Prosecution and Defense agents argue Federal Court of Appeal cases against retrieved precedent, and a Judge predicts the outcome. The interesting part is the evaluation harness that keeps every claim honest.",
-    overview:
-      "I inherited a working prototype of an adversarial legal-trial pipeline from an earlier cohort and turned it into something measurable. The question I care about is not whether the agents produce fluent arguments, it is whether the verdicts beat a naive baseline on cases the model could not have memorised, and what that costs.",
-    metric: { value: "88.9%", label: "accuracy on 27 post-cutoff cases (always-predict-majority: 77.8%)" },
-    tags: ["LLM / Agents", "RAG", "Evaluation", "MLOps"],
-    stack: ["Python", "Claude Opus", "LangChain", "Qdrant", "BM25 + RRF", "FastAPI", "Next.js", "Langfuse", "DSPy", "pytest"],
-    sections: [
-      {
-        title: "How the system works",
-        items: [
-          "A Prosecution agent and a Defense agent each argue a Federal Court of Appeal proceeding from a structured case packet. A Judge agent reads both, returns a binary verdict (moving party succeeds or fails), a confidence score, key evidence for and against, and unresolved issues. Orchestration is a sequential LangChain pipeline that also streams turns over a WebSocket to a Next.js UI.",
-          "Retrieval is hybrid: BM25 and dense Qdrant search fused with reciprocal rank fusion, over 44 judgments (7,170 chunks). Active-case evidence lives in a separate in-memory index, so it can never leak into the canonical precedent store.",
-          "The precedent library is published as an immutable, content-hashed release. Publishing rolls back on any failure and is gated by semantic quality queries. Restores verify the snapshot hash, point count and payload hashes, so an experiment can always be tied to the exact corpus it ran on.",
-        ],
-      },
-      {
-        title: "What I added",
-        items: [
-          "Benchmark packs and a runner: three versioned packs (209, 198 and 27 cases) with leakage checks, and a reproducible manifest per run (pack hash, config hash, git SHA, prompt hashes).",
-          "A post-cutoff pack of 27 decisions dated after the model's knowledge cutoff, built specifically to rule out memorisation.",
-          "Retrieval fixes: restrict precedents to those decided before the case being tested, and demote counsel-list boilerplate chunks that were polluting results.",
-          "Metrics beyond accuracy: chance baselines, Brier score for calibration, citation precision, and cost per run.",
-          "Cost and iteration speed: Anthropic Message Batches for concurrent runs, DSPy-optimised judge prompt, and Langfuse tracing with a backfill script for older runs.",
-          "A packet-builder agent and a blind packet-auditor agent to rebuild case packets from the actual judgments.",
-        ],
-      },
-      {
-        title: "What I learned",
-        items: [
-          "A first prompt predicted 'fails' for all 28 cases in a dev slice: 50% accuracy, which equals chance. The baseline check caught it before I could call it a result.",
-          "A predictive judge prompt raised accuracy to 73.5% on 68 dev cases (95% CI 62 to 82.5%) against 50% chance.",
-          "Some early runs reached near-perfect accuracy on rebuilt packets. I distrust them (small n, and the judge reads the case record), which is why the post-cutoff pack exists and why they are not the headline here.",
-          "On the post-cutoff set, the full debate and a single judge with no advocates both scored 24/27, but the debate cost about six times as much ($4.22 vs $0.74). The adversarial structure adds transparency, not measurable accuracy, on this sample.",
-        ],
-      },
-    ],
-  },
+  legalAgents,
   marketResearchAgent,
   aslFingerspelling,
   {

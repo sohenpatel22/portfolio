@@ -25,7 +25,7 @@ export const aslFingerspelling: Project = {
     { k: "14", v: "held-out test signers, with per-signer scores" },
     { k: "98.6%", v: "of badly failed clips caught by the confidence flag" },
     { k: "140+", v: "automated tests, plus a CI metric gate" },
-    { k: "177", v: "commits, April to October 2026" },
+    { k: "183", v: "commits, April to October 2026" },
     { k: "1.6x", v: "faster ONNX inference, identical output" },
   ],
   docs: [
@@ -123,7 +123,7 @@ export const aslFingerspelling: Project = {
       ],
     },
     {
-      title: "Training from scratch",
+      title: "Training from scratch, twice",
       intro:
         "To answer the fairness question, I trained from random weights with the ingredients the top Kaggle solutions used: 192 frames, heavy augmentation, CutMix on half the clips, decoder input masking, a joint CTC loss and weight averaging. One 16-epoch run on a Kaggle T4 took 2 hours 45 minutes.",
       table: {
@@ -133,12 +133,16 @@ export const aslFingerspelling: Project = {
           ["Tuned deployed model", "0.270", "0.307"],
           ["From scratch, CTC head", "0.300", "0.332"],
           ["From scratch, attention decoder", "0.373", "0.429"],
+          ["Continued 26 more epochs, CTC head", "0.284", "0.316"],
+          ["Continued 26 more epochs, attention decoder", "0.365", "0.414"],
         ],
       },
       items: [
         "It did not beat the deployed model (the CTC head is 0.022 behind, paired interval 0.009 to 0.035, better for only 4 of 14 signers), so nothing was changed in the app.",
         "I read it as under-trained rather than as a failed recipe: validation CER was still falling when the schedule ended, and the winning solutions trained for about 300 epochs. The CTC head beat the attention decoder for all 14 signers, which fits the attention decoder needing far more epochs to learn to read the encoder.",
         "The CTC head has no sequence confidence, so the flag rule only applies to the attention decoder.",
+        "Since the curve was still falling, I restarted from those weights with a fresh schedule (3 hours 40 minutes on a T4, early stopping at epoch 26). The CTC head gained 0.017 for every one of the 14 signers and is now 0.008 behind the deployed model, but the paired interval (-0.011 to 0.020) includes zero, so I cannot tell them apart. I only deploy a model that is clearly better, so the app is unchanged.",
+        "The attention decoder barely moved, and I stopped on the wrong metric: early stopping used its noisy, flat validation CER while the CTC head was still improving. It would not have changed the conclusion (about 0.004), but it is the same lesson as the first checkpoint: choose the checkpoint using the metric you will actually serve.",
       ],
     },
     {
@@ -178,8 +182,8 @@ export const aslFingerspelling: Project = {
     {
       title: "Where I stopped, and what I would do next",
       items: [
-        "I stopped at the tuned model (test CER 0.307, with 40% of clips flagged as unreliable) because the next gains need a longer run or better inputs, not more tuning.",
-        "Next: a from-scratch run of 60 or more epochs (about 8 hours of T4 time), pose and lip landmarks for clips where the hands are missed (where most of the remaining error is), z coordinates as extra features, putting the FastAPI service somewhere public (the Space only runs the Gradio demo), and tagging a release.",
+        "I stopped at the tuned model (test CER 0.307, with 40% of clips flagged as unreliable). A longer from-scratch run brought the CTC head level with it within noise, so the remaining error is probably the data, not the training recipe.",
+        "Next: rescoring beam search hypotheses with the CTC head or averaging it with the deployed model, pose and lip landmarks for clips where the hands are missed (where most of the remaining error is), z coordinates as extra features, putting the FastAPI service somewhere public (the Space only runs the Gradio demo), and tagging a release.",
         "Limitations: isolated fingerspelling clips only, no full sentences. It struggles with bad lighting, odd camera angles and signers unlike the training set, and short words tend to get made up. The model was trained on the competition's landmarks but the demo runs MediaPipe on the visitor's own video, so there is a domain gap.",
       ],
     },

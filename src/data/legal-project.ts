@@ -107,7 +107,7 @@ export const legalAgents: Project = {
         "Benchmark packs with leakage checks and a reproducible manifest per run (pack hash, config hash, git SHA, prompt hashes), a runner with a hard per-run budget that stops on the first credit error, and Anthropic Message Batches for concurrent runs.",
         "An immutable, content-hashed precedent library. Publishing rolls back on failure and is gated by quality queries, so every experiment ties to the exact corpus it ran on.",
         "Langfuse tracing, including a backfill that replayed 163 older case traces without re-running any model calls, and a DSPy-optimised judge prompt.",
-        "198 automated tests run in CI. Total Anthropic spend was about $70, kept under a $50-a-month rule with an estimate before every paid run. Subagent labelling and audits cost nothing in API fees.",
+        "198 automated tests run in CI. Every paid run had a cost estimate first, and subagent labelling and audits cost nothing in API fees.",
       ],
     },
     {

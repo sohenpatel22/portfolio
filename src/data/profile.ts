@@ -13,7 +13,7 @@ export const profile = {
   resume: "/Sohen_Patel_Resume.pdf",
   photo: "/headshot.jpg",
   summary:
-    "I am an MEng student at the University of Toronto (GPA 3.81/4.0, graduating Jan 2027) who builds LLM and agentic systems and then measures whether they actually work. I shipped an enterprise agent to 5,000+ employees at Ontario Health, led a student team building a six-agent consulting system for a Deloitte-sponsored practicum, and I am building a multi-agent legal reasoning system for my research project. Before AI, I spent a year turning plant data into decisions at ArcelorMittal Nippon Steel. I care about honest baselines, gold-standard datasets and systems people can trust.",
+    "I am an MEng student at the University of Toronto (GPA 3.81/4.0, graduating Dec 2026) who builds LLM and agentic systems and then measures whether they actually work. I shipped an enterprise agent to 5,000+ employees at Ontario Health, led a student team building a six-agent consulting system for a Deloitte-sponsored practicum, and I am building a multi-agent legal reasoning system for my research project. Before AI, I spent a year turning plant data into decisions at ArcelorMittal Nippon Steel. I care about honest baselines, gold-standard datasets and systems people can trust.",
 };
 
 export const stats = [
@@ -186,7 +186,7 @@ export const education: Education[] = [
   {
     school: "University of Toronto",
     degree: "Master of Engineering, Data Analytics and Machine Learning",
-    period: "Sep 2025 – Expected Jan 2027",
+    period: "Sep 2025 – Expected Dec 2026",
     note: "GPA 3.81/4.0",
     highlights: [
       {

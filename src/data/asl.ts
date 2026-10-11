@@ -40,7 +40,7 @@ export const aslFingerspelling: Project = {
       items: [
         "MediaPipe finds 21 landmarks per hand in each frame, giving 84 numbers per frame (x and y for two hands, zeros when a hand is missing). Each sequence is centred on the wrist and scaled so the model sees hand shape rather than where the hand sits in the frame, then resampled or padded to 64 frames.",
         "A Conformer encoder (6 layers, 384 dimensions, 6 heads, macaron feed-forward blocks and a depthwise convolution module) feeds a 6-layer Transformer decoder over a character vocabulary. Beam search turns it into text. 27.8M parameters.",
-        "Trained on the Kaggle Google ASL Fingerspelling data, using the main and supplemental sets.",
+        "Trained on more than 115,000 sequences from the Kaggle Google ASL Fingerspelling data (the main and supplemental sets).",
       ],
     },
     {

@@ -104,7 +104,7 @@ export const legalAgents: Project = {
     {
       title: "Engineering",
       items: [
-        "Benchmark packs with leakage checks and a reproducible manifest per run (pack hash, config hash, git SHA, prompt hashes), a runner with a hard per-run budget that stops on the first credit error, and Anthropic Message Batches for concurrent runs.",
+        "More than 15 cost-capped experiments, run through benchmark packs with leakage checks and a reproducible manifest per run (pack hash, config hash, git SHA, prompt hashes). The runner has a hard per-run budget and stops on the first credit error, and uses Anthropic Message Batches for concurrent runs.",
         "An immutable, content-hashed precedent library. Publishing rolls back on failure and is gated by quality queries, so every experiment ties to the exact corpus it ran on.",
         "Langfuse tracing, including a backfill that replayed 163 older case traces without re-running any model calls, and a DSPy-optimised judge prompt.",
         "198 automated tests run in CI. Every paid run had a cost estimate first, and subagent labelling and audits cost nothing in API fees.",

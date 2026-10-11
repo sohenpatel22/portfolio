@@ -185,6 +185,7 @@ export const marketResearchAgent: Project = {
           ["Context precision", "0.83"],
           ["Context recall", "0.92"],
           ["Refusals, forecast and SQL tool use, numeric facts", "100%"],
+          ["Answers with citations", "98.3%"],
           ["Unanswerable questions handled honestly", "7 of 7"],
           ["Latency", "4.3 s median, 12.4 s at p95"],
           ["Cost and size", "about $0.0013 and 4.7k tokens per question"],

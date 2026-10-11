@@ -24,7 +24,7 @@ export const aslFingerspelling: Project = {
     { k: "0.307", v: "test CER, split by signer (lower is better)" },
     { k: "14", v: "held-out test signers, with per-signer scores" },
     { k: "98.6%", v: "of badly failed clips caught by the confidence flag" },
-    { k: "121", v: "automated tests in 15 files, plus a CI metric gate" },
+    { k: "140+", v: "automated tests, plus a CI metric gate" },
     { k: "177", v: "commits, April to October 2026" },
     { k: "1.6x", v: "faster ONNX inference, identical output" },
   ],

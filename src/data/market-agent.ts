@@ -1,7 +1,7 @@
 import type { Project } from "./projects";
 
 const GH = "https://github.com/sohenpatel22/market_research_AI_agent";
-const blob = (p: string) => `${GH}/blob/master/${p}`;
+const blob = (p: string) => `${GH}/blob/main/${p}`;
 
 export const marketResearchAgent: Project = {
   slug: "market-research-agent",
@@ -19,9 +19,10 @@ export const marketResearchAgent: Project = {
     "Langfuse", "RAGAS", "DeepEval", "MLflow", "DVC", "Docker", "GitHub Actions", "MCP", "Power BI",
   ],
   repo: GH,
+  demo: "https://huggingface.co/spaces/SohenP/Market_Research_Agent",
   facts: [
-    { k: "253", v: "commits over seven weeks, built solo" },
-    { k: "130", v: "automated tests plus a paid quality gate in CI" },
+    { k: "278", v: "commits over seven weeks, built solo" },
+    { k: "130+", v: "automated tests plus a paid quality gate in CI" },
     { k: "99", v: "golden questions in 8 categories" },
     { k: "5.4k", v: "filing chunks in one Postgres database" },
     { k: "$0.0013", v: "average cost per answered question" },
@@ -30,7 +31,7 @@ export const marketResearchAgent: Project = {
   docs: [
     { label: "Architecture", href: blob("docs/architecture.md") },
     { label: "Model card", href: blob("docs/model-card.md") },
-    { label: "Decision records", href: `${GH}/tree/master/docs/adr` },
+    { label: "Decision records", href: `${GH}/tree/main/docs/adr` },
     { label: "Power BI recipe", href: blob("docs/power-bi.md") },
     { label: "Deployment guides", href: blob("docs/oracle-deploy.md") },
   ],
@@ -65,7 +66,7 @@ export const marketResearchAgent: Project = {
       items: [
         "Coverage: five large-cap companies (AAPL, MSFT, NVDA, JPM, XOM), their most recent 10-K and 10-Q filings, about ten years of daily prices and quarterly fundamentals.",
         "Question types it handles: what a company says in its filings, price and fundamentals lookups, near-term volatility and direction forecasts, comparisons across companies, and questions that mix these.",
-        "Question types it refuses: trades, personalised financial advice, and attempts to override its instructions. These are refused at the first step, before any tool runs.",
+        "Question types it refuses: trades, personalised financial advice, and attempts to override its instructions. Obvious jailbreak phrases are refused by a pattern check before any model call, and the rest are refused at the first routing step, before any tool runs.",
         "Positioning: research and education only. The interface and every forecast say it is not investment advice.",
       ],
     },
@@ -239,7 +240,7 @@ export const marketResearchAgent: Project = {
       },
       items: [
         "Request bodies are validated (question length, ticker pattern, horizon). Blocking work runs in a thread pool so the event loop is never blocked. The agent runtime is built lazily, so /health and /forecast work with no LLM key, and a missing key is a clean 503 rather than a stack trace.",
-        "A per-client sliding-window rate limit (30 requests a minute by default) protects the paid model; error responses never include internal details. The limiter is in-memory, which is enough for a single-process demo and is listed as a limitation.",
+        "Two limits protect the paid model: a per-client sliding window (10 requests a minute) and a daily cap of 50 chat questions across all clients, with an output token cap. Obvious jailbreak phrases are refused by a pattern check before any model call, and only the DeepSeek key is sent to the Space. Error responses never include internal details. Both limiters are in memory, which is enough for a single-process demo.",
         "A Gradio interface sits on the same code path: a live progress checklist with a sources table, a Plotly forecast chart, and market-data charts.",
         "An MCP server exposes filing search, forecasts, market-data lookups and the full agent to any MCP client such as Claude Desktop.",
         "A Power BI recipe covers the connection, data model, DAX measures and three dashboard pages over the published forecasts, backtest and SQL views.",
@@ -250,15 +251,16 @@ export const marketResearchAgent: Project = {
       table: {
         columns: ["Workflow", "Trigger", "What it does"],
         rows: [
-          ["CI: lint and test", "Every push and pull request", "Lints and runs the 130 tests with coverage; none of them need a paid API"],
+          ["CI: lint and test", "Every push and pull request", "Lints and runs the 130+ tests with coverage; none of them need a paid API"],
           ["CI: DeepEval gate", "Every push and pull request", "Runs the quality gate on six golden items, caching the embedding and reranker models; skips itself without a key"],
           ["CI: Docker build", "Every push and pull request", "Builds the runtime image, checks it runs as a non-root user, then starts the container against a Postgres service and asserts /health, the UI and request validation"],
           ["Seed database", "Weekly and on demand", "Runs ingestion against the production database and refreshes published forecasts"],
           ["Retrain", "Monthly and on demand", "Walk-forward check; opens a pull request with the new bundle only if warranted"],
-          ["Deploy", "Manual", "Hugging Face Space deploy with a live smoke test; an arm64 build to an Oracle Cloud VM through GitHub Container Registry"],
+          ["Deploy", "Manual", "Hugging Face Space deploy that waits for the build and smoke-tests /health, the UI and a real /chat question; an arm64 Oracle Cloud workflow exists but is not in use"],
         ],
       },
       items: [
+        "The app is live on a Hugging Face Gradio Space, reading from a Neon Postgres database with pgvector. Free hosting was the hard part: it needed a pinned torch release that ZeroGPU accepts, Gradio's server-side rendering turned off so uvicorn could bind its port, a small GPU probe app to pass the platform's startup check, and explicit CPU loading for the embedding model and reranker. The fixes are in the deploy module and written up in an architecture decision record.",
         "The Docker image is multi-stage: dependencies from a lockfile, CPU-only PyTorch, no compilers or training libraries in the runtime stage, both models baked in so it starts offline, a non-root user (UID 1000), a health check, and no secrets in any layer.",
         "Secrets live only in the CI and runtime environment, and values pasted from .env files into CI secrets are cleaned of stray quotes (a bug I hit and fixed with a test).",
         "Six short architecture decision records document the trade-offs below, written when each decision was made.",
@@ -274,7 +276,7 @@ export const marketResearchAgent: Project = {
           ["Provider-agnostic model layer", "Not locked to one vendor; judge can differ from the agent", "Structured output differs per provider, handled with retries"],
           ["Layered evaluation", "Cheap exact checks catch what noisy judges miss; CI gate stays low-cost", "A small golden set catches regressions but cannot rank models finely"],
           ["Postgres for everything", "Vectors, keywords, tables and BI views in one service to run and secure", "A much larger corpus would need a dedicated vector store"],
-          ["Deployment kept separate from the app", "Platform limits changed without touching the application", "No public demo yet"],
+          ["Deployment kept separate from the app", "Hosting problems (a paid-plan wall, an Oracle Arm instance never in stock, ZeroGPU quirks) never touched the agent", "A few Space-specific workarounds live in the deploy module"],
         ],
       },
       items: [],
@@ -286,7 +288,7 @@ export const marketResearchAgent: Project = {
         "The direction model is weak and the volatility model loses on XOM. Outputs are statistical estimates, not trading signals, with no transaction costs or portfolio construction.",
         "The golden set was drafted by an LLM and curated by one person (me). Ninety-nine items catches regressions but is not enough to claim fine-grained accuracy differences, and a second labeller is on the to-do list.",
         "Only DeepSeek has been fully evaluated with RAGAS on the whole set; the other providers were compared on a 69-question subset with one run each.",
-        "Public hosting is not live yet. The production database, deployment workflows (Hugging Face Space and an Oracle Cloud Always Free VM) and container image exist; the Space could not start because the current account plan has no managed CPU hardware for Docker Spaces. It runs end to end locally with one command.",
+        "The live demo has no authentication, so its limits are global: 10 requests a minute per client and 50 chat questions a day across everyone, held in memory (they reset when the process restarts). Per-user limits need accounts, which is on the to-do list.",
       ],
     },
     {
@@ -295,7 +297,7 @@ export const marketResearchAgent: Project = {
         "A grader that can say 'this answer isn't supported' is worth more than a clever generator: surfacing the quality flag to the user changed how the product behaves, not just how it scores.",
         "Measure before believing. Hybrid retrieval trailed dense-only until the reranker, and the LSTM beats the baseline overall but not for every ticker.",
         "Noisy LLM-judge metrics need calibrated thresholds with the reason written down, and cheap deterministic checks catch what judges miss.",
-        "Next: enlarge the golden set with a second labeller and multi-turn questions, repeat the provider comparison with several runs per model to put error bars on the small gaps, add distribution-level drift monitoring and more tickers, and publish a hosted demo with authentication.",
+        "Next: enlarge the golden set with a second labeller and multi-turn questions, repeat the provider comparison with several runs per model to put error bars on the small gaps, add distribution-level drift monitoring and more tickers, and add authentication so the daily cap can be per user.",
       ],
     },
   ],

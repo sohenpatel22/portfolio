@@ -29,13 +29,23 @@ const QAS: QA[] = [
   },
   {
     q: "Tell me about the Market Research Agent",
-    a: "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and database lookups. A judge model verifies each answer against its sources and triggers a bounded retry. It reached 0.95 faithfulness on a 99-question golden set at about $0.0013 per question; retrieval was ablated (a cross-encoder reranker lifted NDCG@6 from 0.44 to 0.56) and four models were compared on cost per correct answer. The case study covers the architecture, forecasting models, evaluation, CI and honest limitations.",
+    a: "A LangGraph agent that answers questions about five large-cap companies from SEC filings, trained volatility forecasts and database lookups. A judge model verifies each answer against its sources and triggers a bounded retry. It reached 0.95 faithfulness on a 99-question golden set at about $0.0013 per question; retrieval was ablated (a cross-encoder reranker lifted NDCG@6 from 0.44 to 0.56) and four models were compared on cost per correct answer. It is live as a Hugging Face Space (limited to 50 questions a day). The case study covers the architecture, forecasting models, evaluation, CI, deployment and honest limitations.",
     link: { label: "Open the case study", href: "/projects/market-research-agent" },
   },
   {
     q: "Tell me about the ASL fingerspelling project",
     a: "A Conformer-Transformer that turns video of ASL fingerspelling into text, scored on 14 signers it never saw (test CER 0.307; the first deployed model was 0.334). The error analysis found that it fails by making text up when MediaPipe cannot see the hands, so I added a confidence rule that flags 40% of clips and catches 98.6% of the badly failed ones. I also tried six accuracy ideas and a from-scratch retraining that did not beat it, and reported that. Around it: DVC, MLflow with a gated registry, a monitored FastAPI service, ONNX (1.6x faster), CI with a metric gate and a free live demo.",
     link: { label: "Open the case study", href: "/projects/asl-fingerspelling" },
+  },
+  {
+    q: "Tell me about the hospital news agent evaluation",
+    a: "I compared the Copilot news agent I built at Ontario Health with Perplexity, Claude, ChatGPT and Gemini on three hospital monitoring tasks, scored against a hand-verified gold dataset. A chain-of-thought prompt lifted the agent's F1 from 0.25 to 0.42 on the five-year task and ChatGPT's from 0.25 to 0.57. Recall was low for every system, and with only three hospitals most pairs of systems could not be told apart. I also found and fixed a bug in my own scoring, which changed 161 matches, and the page lists the limits of the evidence.",
+    link: { label: "Open the case study", href: "/projects/hospital-news-agent-evaluation" },
+  },
+  {
+    q: "How does this chatbot work?",
+    a: "Preset questions show stored answers. A typed question passes a pattern gate that refuses off-topic and attack-style questions for free, then per-visitor and daily limits, then retrieval over this site's content, then a model call on OpenAI Flex with a limited standard fallback, and an output guard that blocks prompt leaks. I tested it with 335 questions: none of the 197 attack or off-topic ones got through, and the whole run cost about 1.2 cents.",
+    link: { label: "Open the case study", href: "/projects/portfolio-chatbot" },
   },
   {
     q: "How do you evaluate LLM systems?",

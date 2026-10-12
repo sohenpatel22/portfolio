@@ -78,12 +78,13 @@ function build() {
 
   for (const p of projects) {
     const href = `/projects/${p.slug}`;
+    const links = `${p.demo ? ` Live demo: ${p.demo}.` : ""}${p.repo ? ` Code: ${p.repo}.` : ""}`;
     const facts = p.facts ? ` Key facts: ${p.facts.map((f) => `${f.k} ${f.v}`).join("; ")}.` : "";
     chunks.push(
       mk(
         `proj-${p.slug}`,
         `${p.title} (${p.kicker})`,
-        `${p.summary} Headline result: ${p.metric.value}, ${p.metric.label}. Stack: ${p.stack.join(", ")}. ${p.overview}${facts}`,
+        `${p.summary} Headline result: ${p.metric.value}, ${p.metric.label}. Stack: ${p.stack.join(", ")}. ${p.overview}${facts}${links}`,
         href,
       ),
     );
@@ -211,11 +212,12 @@ export function buildContext(queries: string[], maxChars = 6500): string {
     const t = text.toLowerCase();
     for (const [re, match] of PINS) {
       if (!re.test(t)) continue;
-      for (const c of chunks) if (match(c.id) && !pinned.includes(c)) pinned.push(c);
+      // At most two sections per topic, so scoring still gets to add what the question is really about.
+      for (const c of chunks.filter((x) => match(x.id)).slice(0, 2)) if (!pinned.includes(c)) pinned.push(c);
     }
   }
   const topped = scored.map((x) => x.c).filter((c) => !pinned.includes(c));
-  let picked = [...pinned.slice(0, 4), ...topped].slice(0, 5);
+  let picked = [...pinned.slice(0, 3), ...topped].slice(0, 5);
   if (picked.length === 0) {
     picked = chunks.filter((c) => c.id === "about" || c.id.startsWith("exp-")).filter((c) => !c.id.includes("--")).slice(0, 4);
   }

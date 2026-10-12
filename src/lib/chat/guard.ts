@@ -156,7 +156,7 @@ const NAMES = [
   "ontario health", "deloitte", "arcelormittal", "am/ns", "amns", "isro", "hpair", "reach for the stars", "aga khan",
   "university of toronto", "uoft", "u of t", "gujarat", "market research", "legal agent", "legal ai", "workplan",
   "asl", "fingerspelling", "msft", "two-stage", "two stage", "volatility forecast", "volatility model", "direction classifier", "har-rv", "diebold", "legal system", "legal pipeline", "legal project", "legal case", "legal agents", "the judge", "judge's", "judge in", "the evaluation", "workplan agent", "quality gates", "colorization", "imdb", "life expectancy", "ieee-cis", "hot strip mill", "careercraft",
-  "hirac", "trial replay", "gate xe", "gate exam", "this site", "this website", "this portfolio", "your site",
+  "hirac", "hospital news", "news agent", "phipa", "ask about sohen", "portfolio chatbot", "this chatbot", "this assistant", "trial replay", "gate xe", "gate exam", "this site", "this website", "this portfolio", "your site",
   "your portfolio", "your projects", "your resume", "your work", "your experience", "your skills",
 ];
 

@@ -70,6 +70,31 @@ const DIAGRAMS: Record<string, { title: string; stages: { label: string; sub?: s
       [{ label: "Text + reliability", accent: true }],
     ],
   },
+  "portfolio-chatbot": {
+    title: "One typed question",
+    stages: [
+      [{ label: "Question", sub: "same-origin, 280 characters max" }],
+      [{ label: "Pattern gate", sub: "off topic and attacks stop here, free", accent: true }],
+      [{ label: "Budgets", sub: "per visitor and daily, in Redis" }],
+      [{ label: "Retrieve", sub: "chunks of the site's own content" }],
+      [
+        { label: "Flex model", sub: "about half price" },
+        { label: "Standard fallback", sub: "own small budget" },
+      ],
+      [{ label: "Output guard", sub: "blocks prompt leaks", accent: true }],
+    ],
+  },
+  "hospital-news-agent-evaluation": {
+    title: "From raw answers to a scored comparison",
+    stages: [
+      [{ label: "Gold dataset", sub: "hand verified, versioned" }],
+      [{ label: "5 systems x 3 tasks", sub: "Copilot agent run 5 times" }],
+      [{ label: "Extract + match", sub: "to the gold rows" }],
+      [{ label: "Adjudicate", sub: "gap, hallucination, wrong, out of window" }],
+      [{ label: "Score", sub: "recall, precision, bootstrap CIs", accent: true }],
+      [{ label: "Langfuse + report", sub: "one trace per system and task", accent: true }],
+    ],
+  },
   "consulting-workplan-agent": {
     title: "Brief to deliverables",
     stages: [

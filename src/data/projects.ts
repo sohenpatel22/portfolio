@@ -1,6 +1,8 @@
 import { marketResearchAgent } from "./market-agent";
 import { aslFingerspelling } from "./asl";
 import { legalAgents } from "./legal-project";
+import { hospitalNewsEvaluation } from "./hospital-eval";
+import { portfolioChatbot } from "./chatbot-project";
 
 export type Table = { caption?: string; columns: string[]; rows: string[][] };
 
@@ -38,6 +40,8 @@ export const projects: Project[] = [
   legalAgents,
   marketResearchAgent,
   aslFingerspelling,
+  hospitalNewsEvaluation,
+  portfolioChatbot,
   {
     slug: "consulting-workplan-agent",
     tier: "major",

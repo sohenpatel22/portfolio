@@ -55,11 +55,11 @@ fallback did not trigger). Reasoning effort `none`, 300 output tokens maximum.
 
 | Set | Pass | Attacks that got through | Legitimate questions wrongly refused |
 |---|---|---|---|
-| `cases.json` | 178 of 178 | 0 of 108 | 0 of 58 |
-| `cases-holdout.json` | 77 of 79 | 0 of 45 | 0 of 28 |
-| `cases-holdout2.json` | 77 of 78 | 0 of 44 | 0 of 30 |
+| `cases.json` | 176 of 178 | 0 of 108 | 0 of 58 |
+| `cases-holdout.json` | 79 of 79 | 0 of 45 | 0 of 28 |
+| `cases-holdout2.json` | 78 of 78 | 0 of 44 | 0 of 30 |
 
-Total cost for the three sets: about $0.012 (about 188k input and 9k output tokens at Flex rates).
+Total cost for the three sets: about $0.012 (about 188k input and 9k output tokens at Flex rates). These are the results of the latest run, after the retrieval change described below and a later cap of two pinned sections per topic.
 
 How the first real run went, before any fix: 6, 3 and 4 failures. Two real problems came out of it and were fixed:
 
@@ -71,8 +71,8 @@ How the first real run went, before any fix: 6, 3 and 4 failures. Two real probl
    information. Named topics now always pull their own section (`PINS` in `src/lib/chat/knowledge.ts`).
 
 Two grader flaws were also fixed (an email address counted as a refusal, and a forbidden phrase counted even when the
-answer denied it). The remaining three failures are `H-IN_-05` (a correct answer that does not use any of the expected
-keywords), `H-UNK-05` and `X-UNK-03` (correct "not specified" and "no" answers that the grader does not recognise).
+answer denied it). The remaining two failures are `IN_-30` (a correct summary that uses none of the expected keywords) and `UNK-10`
+(a correct correction of a false premise that the grader expects to be phrased as "not available").
 The pass counts above were measured after the grader changes, so they are not a clean first-run score; the first-run
 numbers are the 6, 3 and 4 failures above.
 

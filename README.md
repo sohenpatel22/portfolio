@@ -53,9 +53,9 @@ Results against `gpt-6-luna` on Flex:
 
 | Set | Passed | Attacks that got through | Legitimate questions wrongly refused |
 |---|---|---|---|
-| Main set (178) | 178 | 0 of 108 | 0 of 58 |
-| Hold-out 1 (79) | 77 | 0 of 45 | 0 of 28 |
-| Hold-out 2 (78) | 77 | 0 of 44 | 0 of 30 |
+| Main set (178) | 176 | 0 of 108 | 0 of 58 |
+| Hold-out 1 (79) | 79 | 0 of 45 | 0 of 28 |
+| Hold-out 2 (78) | 78 | 0 of 44 | 0 of 30 |
 
 The whole run cost about $0.012. Two things to know when reading this:
 
